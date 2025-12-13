@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard</title>
+    <link rel="stylesheet" href="../main.css">
+</head>
+
+<body class="bg-light">
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="flex justify-center items-center"
+        style="height: 100vh; width: 100vw; position: fixed; top: 0; left: 0; background: var(--background-color); z-index: 9999; color: var(--primary-color);">
+        <div style="font-size: 1.5rem; font-weight: 600;">Loading Dashboard...</div>
+    </div>
+
+    <div id="dashboard-content" class="container hidden" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header / Navbar -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <div
+                    style="width: 40px; height: 40px; background: var(--primary-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+                    P</div>
+                <h2 style="margin: 0; color: var(--text-primary);">Little star</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="profile.html" class="flex items-center gap-2" style="text-decoration: none;">
+                    <span style="text-align: right;">
+                        <span id="teacherName"
+                            style="display: block; font-weight: 600; color: var(--text-primary); line-height: 1;">Teacher</span>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);">View Profile</span>
+                    </span>
+                    <img id="teacherPhoto" src="../images/default-profile.png"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Teacher&background=random'"
+                        style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                </a>
+            </div>
+        </header>
+
+        <!-- Welcome Section -->
+        <div class="card mb-4"
+            style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 3rem; border: none; position: relative; overflow: hidden;">
+            <div style="position: relative; z-index: 2;">
+                <h1 style="color: white; margin-bottom: 0.5rem;">Welcome back! 👋</h1>
+                <p style="opacity: 0.9; font-size: 1.1rem;">Manage your classes, students, and activities efficiently.
+                </p>
+            </div>
+            <!-- Decorative circles -->
+            <div
+                style="position: absolute; top: -20px; right: -20px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%;">
+            </div>
+            <div
+                style="position: absolute; bottom: -40px; left: 10%; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%;">
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <h3 class="mb-4">Quick Actions</h3>
+        <div class="grid grid-3" style="margin-bottom: 3rem;">
+
+            <a href="activity.html"
+                class="card dashboard-card flex flex-col items-center justify-center text-center gap-2"
+                style="text-decoration: none; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🎨</div>
+                <h4 style="margin: 0; font-size: 1.25rem;">Activity</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Manage daily activities</p>
+            </a>
+
+            <a href="attendance.html"
+                class="card dashboard-card flex flex-col items-center justify-center text-center gap-2"
+                style="text-decoration: none; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📅</div>
+                <h4 style="margin: 0; font-size: 1.25rem;">Attendance</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Track student presence</p>
+            </a>
+
+            <a href="fees.html" class="card dashboard-card flex flex-col items-center justify-center text-center gap-2"
+                style="text-decoration: none; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">💰</div>
+                <h4 style="margin: 0; font-size: 1.25rem;">Fees</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Manage payments</p>
+            </a>
+
+            <a href="add_student.html"
+                class="card dashboard-card flex flex-col items-center justify-center text-center gap-2"
+                style="text-decoration: none; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">👩‍🎓</div>
+                <h4 style="margin: 0; font-size: 1.25rem;">Students</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Admission & details</p>
+            </a>
+
+            <a href="marks.html" class="card dashboard-card flex flex-col items-center justify-center text-center gap-2"
+                style="text-decoration: none; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+                <h4 style="margin: 0; font-size: 1.25rem;">Marks</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Exams & results</p>
+            </a>
+
+            <a href="homework.html"
+                class="card dashboard-card flex flex-col items-center justify-center text-center gap-2"
+                style="text-decoration: none; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
+                <h4 style="margin: 0; font-size: 1.25rem;">Homework</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Assign & review</p>
+            </a>
+
+            <a href="announcement.html"
+                class="card dashboard-card flex flex-col items-center justify-center text-center gap-2"
+                style="text-decoration: none; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📢</div>
+                <h4 style="margin: 0; font-size: 1.25rem;">Announcements</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Broadcast updates</p>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Preserved Logic -->
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+
+        async function init() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Check for error in JSON (from controller modification)
+                    if (data.error) {
+                        window.location.href = '../login.html?error=' + data.error;
+                        return;
+                    }
+
+                    // Render data
+                    const teacher = data.teacher;
+                    if (teacher) {
+                        const nameEl = document.getElementById('teacherName');
+                        if (nameEl) {
+                            nameEl.innerText = teacher.name;
+                        }
+
+                        const photoEl = document.getElementById('teacherPhoto');
+                        if (teacher.photo && photoEl) {
+                            // Ensure photo URL is correct
+                            if (teacher.photo.startsWith('http')) {
+                                photoEl.src = teacher.photo;
+                            } else {
+                                photoEl.src = API_BASE_URL + teacher.photo;
+                            }
+                        }
+                    }
+
+                    const loadingEl = document.getElementById('loading');
+                    if (loadingEl) loadingEl.classList.add('hidden');
+                    if (loadingEl) loadingEl.style.display = 'none'; // Force hide
+
+                    const contentEl = document.getElementById('dashboard-content');
+                    if (contentEl) contentEl.classList.remove('hidden');
+
+                } else {
+                    if (response.status === 401) {
+                        // Unauthorized - Invalid or expired token
+                        localStorage.removeItem('token');
+                        window.location.href = '../login.html?error=session_expired';
+                    } else if (response.url.includes('login')) {
+                        window.location.href = '../login.html';
+                    } else {
+                        alert('Failed to load dashboard. Status: ' + response.status);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard:', error);
+
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) {
+                    loadingEl.innerHTML = '<p style="color: red; text-align: center;">Connection Failed. <br> Please check console for details. <br> ' + (error.message || error) + '</p>';
+                } else {
+                    alert('Connection Failed: ' + (error.message || error));
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

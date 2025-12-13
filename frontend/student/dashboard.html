@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="../main.css">
+    <style>
+        /* Optional: Announcement List Styling specific to this page if needed, 
+           or logic to handle dynamic list */
+        .announcement-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .announcement-date {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .announcement-title {
+            margin: 0.5rem 0;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        .announcement-desc {
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="flex justify-center items-center"
+        style="height: 100vh; width: 100vw; position: fixed; top: 0; left: 0; background: var(--background-color); z-index: 9999; color: var(--primary-color);">
+        <div style="font-size: 1.5rem; font-weight: 600;">Loading Dashboard...</div>
+    </div>
+
+    <div id="dashboard-content" class="container hidden" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header / Navbar -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <div
+                    style="width: 40px; height: 40px; background: var(--success-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+                    S</div>
+                <h2 style="margin: 0; color: var(--text-primary);">Little star</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="profile.html" class="flex items-center gap-2" style="text-decoration: none;">
+                    <span style="text-align: right;">
+                        <span id="studentNameHeader"
+                            style="display: block; font-weight: 600; color: var(--text-primary); line-height: 1;">Student</span>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);">View Profile</span>
+                    </span>
+                    <img id="studentPhotoHeader" src="../images/default-profile.png"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Student&background=random'"
+                        style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                </a>
+            </div>
+        </header>
+
+        <!-- Welcome Section -->
+        <div class="card mb-4"
+            style="background: linear-gradient(135deg, #0284c7, #0284c7); color: white; padding: 3rem; border: none; position: relative; overflow: hidden;">
+            <div style="position: relative; z-index: 2;">
+                <h1 style="color: white; margin-bottom: 0.5rem;">Hi, <span id="studentNameWelcome">Student</span>! 🎒
+                </h1>
+                <p style="opacity: 0.9; font-size: 1.1rem;">Ready to learn something new today?</p>
+            </div>
+            <!-- Decorative circles -->
+            <div
+                style="position: absolute; top: -30px; right: 10%; width: 180px; height: 180px; background: rgba(255,255,255,0.1); border-radius: 50%;">
+            </div>
+            <div
+                style="position: absolute; bottom: -20px; left: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%;">
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <h3 class="mb-4">My Dashboard</h3>
+        <div class="grid grid-3" style="margin-bottom: 3rem;">
+
+            <a href="activity.html"
+                class="card dashboard-card flex flex-col items-center justify-center text-center gap-2"
+                style="text-decoration: none; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🎨</div>
+                <h4 style="margin: 0; font-size: 1.25rem;">Activity</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">View daily classes</p>
+            </a>
+
+            <a href="attendance.html"
+                class="card dashboard-card flex flex-col items-center justify-center text-center gap-2"
+                style="text-decoration: none; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📅</div>
+                <h4 style="margin: 0; font-size: 1.25rem;">Attendance</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Check your records</p>
+            </a>
+
+            <a href="homework.html"
+                class="card dashboard-card flex flex-col items-center justify-center text-center gap-2"
+                style="text-decoration: none; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
+                <h4 style="margin: 0; font-size: 1.25rem;">Homework</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Assignments & tasks</p>
+            </a>
+
+            <a href="fees.html" class="card dashboard-card flex flex-col items-center justify-center text-center gap-2"
+                style="text-decoration: none; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">💳</div>
+                <h4 style="margin: 0; font-size: 1.25rem;">Fees Payment</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Pay online safely</p>
+            </a>
+
+            <a href="announcements.html"
+                class="card dashboard-card flex flex-col items-center justify-center text-center gap-2"
+                style="text-decoration: none; padding: 3rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📢</div>
+                <h4 style="margin: 0; font-size: 1.25rem;">Announcements</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">School news</p>
+            </a>
+
+        </div>
+
+        <!-- Announcements List Container (Preserved if needed for JS injection) -->
+        <div id="announcementsList" style="display: none;"></div>
+
+    </div>
+
+    <!-- Preserved Logic -->
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+
+        async function init() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/student/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.error) {
+                        window.location.href = '../login.html?error=' + data.error;
+                        return;
+                    }
+
+                    const student = data.student;
+                    if (student) {
+                        const nameHeader = document.getElementById('studentNameHeader');
+                        if (nameHeader) {
+                            nameHeader.innerText = student.name;
+                        }
+
+                        const welcomeName = document.getElementById('studentNameWelcome');
+                        if (welcomeName) {
+                            welcomeName.innerText = student.name;
+                        }
+
+                        const photoHeader = document.getElementById('studentPhotoHeader');
+                        if (student.photo && photoHeader) {
+                            if (student.photo.startsWith('http')) {
+                                photoHeader.src = student.photo;
+                            } else {
+                                photoHeader.src = API_BASE_URL + student.photo;
+                            }
+                        }
+                    }
+
+                    // Announcements List (Optional handling if element exists)
+                    const announcements = data.announcements || [];
+                    const announcementsList = document.getElementById('announcementsList');
+
+                    if (announcementsList) {
+                        announcementsList.innerHTML = '';
+                        // Typically displayed in a dedicated section, but if logic exists to populate it
+                        // we keep it running. For now, the dashboard grid links to the page. 
+                        // If we want to show them on dashboard, we can unhide the container.
+                        // announcementsList.style.display = 'block'; 
+                    }
+
+                    const loadingEl = document.getElementById('loading');
+                    if (loadingEl) loadingEl.classList.add('hidden');
+                    if (loadingEl) loadingEl.style.display = 'none';
+
+                    const contentEl = document.getElementById('dashboard-content');
+                    if (contentEl) contentEl.classList.remove('hidden');
+
+                } else {
+                    if (response.status === 401) {
+                        localStorage.removeItem('token');
+                        window.location.href = '../login.html?error=session_expired';
+                    } else if (response.url.includes('login')) {
+                        window.location.href = '../login.html';
+                    } else {
+                        alert('Failed to load dashboard. Status: ' + response.status);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard:', error);
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) {
+                    loadingEl.innerHTML = '<p style="color: red; text-align: center;">Connection Failed. <br> Please check console for details. <br> ' + (error.message || error) + '</p>';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

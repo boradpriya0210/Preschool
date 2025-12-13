@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - Student Dashboard</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍎</text></svg>">
+    <link rel="stylesheet" href="../main.css">
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">&larr; Back</a>
+                <h2 style="margin: 0; color: var(--text-primary);">My Attendance</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <!-- <span id="studentName">Student</span> -->
+                    <a href="profile.html">
+                        <img id="studentPhotoHeader" src="../images/default-profile.png"
+                            onerror="this.src='https://ui-avatars.com/api/?name=Student&background=random'"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title text-primary">Attendance Record</h3>
+            </div>
+            <div id="loading" class="text-center p-4 text-muted">Loading attendance...</div>
+            <div class="table-container">
+                <table id="attendanceTable" class="hidden">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceBody">
+                        <!-- Rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+
+        async function init() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/student/getAttendance`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+
+                    const student = data.student;
+                    if (student) {
+                        // document.getElementById('studentNameHeader').innerText = student.name;
+                        if (student.photo) {
+                            const photoEl = document.getElementById('studentPhotoHeader');
+                            if (photoEl) {
+                                if (student.photo.startsWith('http')) {
+                                    photoEl.src = student.photo;
+                                } else {
+                                    photoEl.src = API_BASE_URL + student.photo;
+                                }
+                            }
+                        }
+                    }
+
+                    const attendanceList = data.attendanceList || [];
+                    const tbody = document.getElementById('attendanceBody');
+                    tbody.innerHTML = '';
+
+                    if (attendanceList.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="2" class="text-center p-4 text-muted">No attendance records found.</td></tr>';
+                    } else {
+                        attendanceList.forEach(att => {
+                            const tr = document.createElement('tr');
+                            const statusColor = att.present ? '#10b981' : '#ef4444'; // Success : Danger
+                            const statusText = att.present ? 'Present' : 'Absent';
+
+                            tr.innerHTML = `
+                                <td>${att.date}</td>
+                                <td style="color: ${statusColor}; font-weight: 600;">${statusText}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('attendanceTable').classList.remove('hidden');
+
+                } else {
+                    console.error('Failed to fetch attendance');
+                    document.getElementById('loading').innerText = 'Failed to load attendance.';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').innerText = 'Connection error.';
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

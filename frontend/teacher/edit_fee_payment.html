@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Fee Payment - Teacher Dashboard</title>
+    <link rel="stylesheet" href="../main.css">
+</head>
+
+<body class="bg-light">
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <a href="fees.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">&larr; Back</a>
+                <h2 style="margin: 0; color: var(--text-primary);">Edit Fee Payment</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span id="teacherName" style="font-weight: 600; color: var(--text-primary);">Teacher Name</span>
+                    <a href="profile.html">
+                        <img id="teacherPhoto" src="../images/default-profile.png"
+                            onerror="this.src='https://ui-avatars.com/api/?name=Teacher&background=random'"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Edit Payment Form Card -->
+        <div class="card mb-4" style="max-width: 600px; margin: 0 auto;">
+            <div class="card-header">
+                <h3 class="card-title text-primary">Edit Payment for <span id="studentName">Student</span></h3>
+            </div>
+
+            <div id="successMsg" class="alert alert-success" style="display: none;">
+                Payment updated successfully!
+            </div>
+            <div id="errorMsg" class="alert alert-danger" style="display: none;">
+            </div>
+
+            <form id="editPaymentForm">
+                <input type="hidden" name="id" id="paymentId">
+
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" name="amount" id="amount" step="0.01" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Months Paid</label>
+                    <input type="text" name="monthsPaid" id="monthsPaid" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Remarks (Optional)</label>
+                    <input type="text" name="remarks" id="remarks" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status" id="status" class="form-control">
+                        <option value="Paid">Paid</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Overdue">Overdue</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary w-full">Update Payment</button>
+                    <a href="fees.html" class="btn btn-secondary w-full"
+                        style="text-decoration: none; text-align: center;">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('id');
+
+        async function init() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+            if (!paymentId) {
+                window.location.href = 'fees.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/editFeePaymentPage?id=${paymentId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.error) {
+                        alert(data.error);
+                        window.location.href = 'fees.html';
+                        return;
+                    }
+
+                    // Teacher
+                    if (data.teacher) {
+                        const nameEl = document.getElementById('teacherName');
+                        if (nameEl) nameEl.innerText = data.teacher.name;
+
+                        if (data.teacher.photo) {
+                            const photoEl = document.getElementById('teacherPhoto');
+                            if (photoEl) {
+                                if (data.teacher.photo.startsWith('http')) {
+                                    photoEl.src = data.teacher.photo;
+                                } else {
+                                    photoEl.src = API_BASE_URL + data.teacher.photo;
+                                }
+                            }
+                        }
+                    }
+
+                    // Payment Data
+                    if (data.feePayment) {
+                        const fp = data.feePayment;
+                        document.getElementById('paymentId').value = fp.id;
+                        document.getElementById('studentName').innerText = fp.student ? fp.student.name : 'Student';
+                        document.getElementById('amount').value = fp.amount || '';
+                        document.getElementById('monthsPaid').value = fp.monthsPaid || '';
+                        document.getElementById('remarks').value = fp.remarks || '';
+                        document.getElementById('status').value = fp.status || 'Paid';
+                    }
+
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        window.location.href = '../login.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Form Submit
+        document.getElementById('editPaymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const formData = new FormData(e.target);
+            const data = new URLSearchParams();
+            for (const pair of formData) {
+                data.append(pair[0], pair[1]);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/updateFeePayment`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: data
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    const successMsg = document.getElementById('successMsg');
+                    successMsg.style.display = 'block';
+                    document.getElementById('errorMsg').style.display = 'none';
+
+                    setTimeout(() => window.location.href = 'fees.html', 1500);
+                } else if (result.error) {
+                    const err = document.getElementById('errorMsg');
+                    err.style.display = 'block';
+                    err.innerText = result.error;
+                    document.getElementById('successMsg').style.display = 'none';
+                } else {
+                    alert('Failed to update payment');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Connection error');
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

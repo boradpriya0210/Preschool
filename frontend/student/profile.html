@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Student Dashboard</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <link rel="stylesheet" href="../main.css">
+    <style>
+        .profile-img-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-change-photo {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">&larr; Back</a>
+                <h2 style="margin: 0; color: var(--text-primary);">My Profile</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="headerStudentName" style="font-weight: 600; color: var(--text-primary);">Student Name</span>
+            </div>
+        </header>
+
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <div id="successMsg" class="alert alert-success" style="text-align: center; display: none;">
+                Profile updated successfully!
+            </div>
+            <div id="errorMsg" class="alert alert-danger" style="display: none;"></div>
+
+            <form id="profileForm">
+                <div class="profile-img-container">
+                    <img id="profileImage" src="../images/default-profile.png"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Student&background=random'"
+                        class="profile-img" alt="Profile Picture">
+                </div>
+
+                <div class="btn-change-photo">
+                    <label for="profileImageInput" class="btn btn-secondary" style="cursor: pointer;">Change
+                        Photo</label>
+                    <input type="file" id="profileImageInput" name="profileImage" accept="image/*"
+                        style="display: none;"
+                        onchange="document.getElementById('profileImage').src = window.URL.createObjectURL(this.files[0])">
+                </div>
+
+                <h3 class="mb-3 border-bottom pb-2"
+                    style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; color: var(--primary-color);">
+                    Personal Details
+                </h3>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="name" id="name" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Roll Number</label>
+                        <input type="text" name="rollNo" id="rollNo" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" name="username" id="username" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Mother's Name</label>
+                        <input type="text" name="motherName" id="motherName" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Mother's Phone Number</label>
+                        <input type="text" name="motherPhoneNumber" id="motherPhoneNumber" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea name="address" id="address" rows="3" class="form-control"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Update Password (leave blank to keep current)</label>
+                    <input type="password" name="newPassword" placeholder="Enter new password" class="form-control">
+                </div>
+
+                <h3 class="mb-3 mt-4" style="color: var(--primary-color);">School Overview</h3>
+                <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">
+                    Little star provides a safe, joyful learning environment focused on early development
+                    and social skills.<br>
+                    Located at 45 Green Park Road, Ahmedabad.<br>
+                    Contact: 98765-43210 for admissions.
+                </p>
+
+                <div class="flex gap-2 direction-column">
+                    <button type="submit" class="btn btn-primary w-full">Update Profile</button>
+                    <button id="logoutBtnMain" type="button" class="btn btn-danger w-full">Logout</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+
+        async function init() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/student/getProfile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+
+                    // Update form fields with student data
+                    if (data.student) {
+                        const student = data.student;
+                        const headerName = document.getElementById('headerStudentName');
+                        if (headerName) headerName.innerText = student.name;
+
+                        document.getElementById('name').value = student.name || '';
+                        document.getElementById('rollNo').value = student.rollNo || '';
+                        document.getElementById('username').value = student.user ? student.user.username : '';
+                        document.getElementById('motherName').value = student.motherName || '';
+                        document.getElementById('motherPhoneNumber').value = student.motherPhoneNumber || '';
+                        document.getElementById('address').value = student.address || '';
+
+                        if (student.photo) {
+                            let photoUrl = student.photo;
+                            if (!photoUrl.startsWith('http')) {
+                                photoUrl = API_BASE_URL + student.photo;
+                            }
+                            document.getElementById('profileImage').src = photoUrl;
+                        }
+                    }
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        window.location.href = '../login.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showError('Failed to load profile information.');
+            }
+        }
+
+        // Form Submit
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const formData = new FormData(e.target);
+
+            try {
+                console.log('Sending token:', token);
+                const response = await fetch(`${API_BASE_URL}/api/student/updateProfile`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                        // Content-Type not set for FormData
+                    },
+                    body: formData
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response redirected:', response.redirected);
+                console.log('Response URL:', response.url);
+
+                const resultText = await response.text();
+
+                if (response.ok) {
+                    if (resultText.includes("success")) {
+                        document.getElementById('successMsg').style.display = 'block';
+                        setTimeout(() => document.getElementById('successMsg').style.display = 'none', 3000);
+                        init(); // Refresh data
+
+                        // If username changed, backend might return "redirect:/logout".
+                        if (resultText.includes("logout")) {
+                            logout();
+                        }
+                    } else if (resultText.includes("error")) {
+                        const errorMatch = resultText.match(/error=([^&]+)/);
+                        const errorMsg = errorMatch ? decodeURIComponent(errorMatch[1]) : 'Update failed';
+                        showError(errorMsg);
+                    } else {
+                        // Fallback success
+                        document.getElementById('successMsg').style.display = 'block';
+                        setTimeout(() => document.getElementById('successMsg').style.display = 'none', 3000);
+                        init();
+                    }
+                } else {
+                    showError('Failed to update profile');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Connection error');
+            }
+        });
+
+        function showError(message) {
+            const err = document.getElementById('errorMsg');
+            err.style.display = 'block';
+            err.innerText = message;
+            setTimeout(() => err.style.display = 'none', 3000);
+        }
+
+        const logout = async (e) => {
+            if (e) e.preventDefault();
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+
+            // Optional: Call backend logout if exists
+            try {
+                await fetch(`${API_BASE_URL}/logout`, { method: 'POST' });
+            } catch (e) { }
+
+            window.location.href = '../index.html';
+        };
+
+        if (document.getElementById('logoutBtnMain')) {
+            document.getElementById('logoutBtnMain').addEventListener('click', logout);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

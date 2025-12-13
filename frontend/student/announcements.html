@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - Student</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <link rel="stylesheet" href="../main.css">
+    <style>
+        .announcement-item {
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .announcement-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .announcement-item:first-child {
+            padding-top: 0;
+        }
+
+        .announcement-date {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .announcement-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .announcement-desc {
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">&larr; Back</a>
+                <h2 style="margin: 0; color: var(--text-primary);">Announcements</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="profile.html">
+                    <img id="studentPhotoHeader" src="../images/default-profile.png"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Student&background=random'"
+                        style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                </a>
+            </div>
+        </header>
+
+        <!-- Announcements List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title text-primary">All Announcements</h3>
+            </div>
+            <div id="announcementsList" class="p-4">
+                <p style="color: var(--text-secondary);" class="text-center">Loading announcements...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+
+        async function init() {
+            // console.log('Initializing Announcements Page...');
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/student/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    const student = data.student;
+                    if (student) {
+                        const photoImg = document.getElementById('studentPhotoHeader');
+                        if (photoImg && student.photo) {
+                            if (student.photo.startsWith('http')) {
+                                photoImg.src = student.photo;
+                            } else {
+                                photoImg.src = API_BASE_URL + student.photo;
+                            }
+                        }
+                    }
+
+                    const announcements = data.announcements || [];
+                    const list = document.getElementById('announcementsList');
+
+                    if (list) {
+                        list.innerHTML = ''; // Clear loading text
+
+                        if (announcements.length === 0) {
+                            list.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 1rem;">No announcements found.</p>';
+                        } else {
+                            announcements.forEach(a => {
+                                const item = document.createElement('div');
+                                item.className = 'announcement-item';
+                                item.innerHTML = `
+                                    <span class="announcement-date">${a.date || ''}</span>
+                                    <h4 class="announcement-title">${a.title || 'Untitled'}</h4>
+                                    <p class="announcement-desc">${a.description || ''}</p>
+                                `;
+                                list.appendChild(item);
+                            });
+                        }
+                    }
+
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        window.location.href = '../login.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                const list = document.getElementById('announcementsList');
+                if (list) list.innerHTML = '<p style="color: var(--danger-color); text-align:center;">Error loading announcements.</p>';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

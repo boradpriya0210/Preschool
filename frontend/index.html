@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little Star Preschool - A Happy Place to Grow</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌟</text></svg>">
+    <link rel="stylesheet" href="main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        (function () {
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+            if (token && role) {
+                // If already logged in, show 'Go to Dashboard' instead of Login
+                window.addEventListener('load', () => {
+                    const loginBtn = document.getElementById('navLoginBtn');
+                    if (loginBtn) {
+                        loginBtn.textContent = 'Go to Dashboard';
+                        if (role.includes('TEACHER')) loginBtn.href = 'teacher/dashboard.html';
+                        else if (role.includes('STUDENT')) loginBtn.href = 'student/dashboard.html';
+                        else loginBtn.href = 'dashboard.html';
+                    }
+                });
+            }
+        })();
+    </script>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav
+        style="background: white; padding: 1rem 2rem; box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 100;">
+        <div class="container flex justify-between items-center">
+            <div class="flex items-center gap-2"
+                style="font-family: var(--font-heading); font-size: 1.5rem; color: var(--primary-color); font-weight: 700;">
+                <span style="font-size: 2rem;">🌟</span> Little Star
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="#about" class="nav-link"
+                    style="display: none; @media(min-width: 768px){display: block;}">About</a>
+                <a href="#programs" class="nav-link"
+                    style="display: none; @media(min-width: 768px){display: block;}">Programs</a>
+                <a href="#contact" class="nav-link"
+                    style="display: none; @media(min-width: 768px){display: block;}">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">A Happy Place to <br>Learn, Play, & Grow</h1>
+            <p class="hero-subtitle">
+                Welcome to Little Star Preschool, where every day is an adventure!
+                We provide a safe, nurturing environment for your child to explore the world.
+            </p>
+            <div class="flex justify-center gap-4" style="flex-wrap: wrap;">
+                <a href="login.html" class="btn btn-primary"
+                    style="padding: 1rem 2.5rem; font-size: 1.25rem; border-radius: 50px;">
+                    Login Now 🚀
+                </a>
+                <a href="#about" class="btn btn-secondary"
+                    style="padding: 1rem 2.5rem; font-size: 1.25rem; border-radius: 50px; background: white;">
+                    Learn More
+                </a>
+            </div>
+        </div>
+        <!-- Decorative shapes can be added here with CSS pseudo-elements if needed, but the gradient handles most -->
+    </header>
+
+    <!-- About Section -->
+    <section id="about" class="container" style="padding-bottom: 4rem;">
+        <div class="grid grid-2" style="align-items: center;">
+            <div style="padding: 2rem;">
+                <h2 class="section-title" style="text-align: left; margin-bottom: 1.5rem;">About Our Preschool</h2>
+                <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    At Little Star, we believe that every child is unique and full of potential.
+                    Our mission is to foster a love for learning through play, creativity, and exploration.
+                </p>
+                <div class="grid grid-2">
+                    <div
+                        style="background: var(--pastel-yellow); padding: 1.5rem; border-radius: var(--border-radius-md);">
+                        <h3 style="color: var(--warning-color); font-size: 1.25rem;">Our Mission</h3>
+                        <p style="font-size: 0.9rem;">To ignite curiosity and build a strong foundation for lifelong
+                            success.</p>
+                    </div>
+                    <div
+                        style="background: var(--pastel-blue); padding: 1.5rem; border-radius: var(--border-radius-md);">
+                        <h3 style="color: var(--primary-color); font-size: 1.25rem;">Our Vision</h3>
+                        <p style="font-size: 0.9rem;">A world where every child feels valued, safe, and inspired to
+                            dream big.</p>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <!-- Placeholder for an image or illustration -->
+                <div
+                    style="background: var(--pastel-pink); width: 100%; height: 400px; border-radius: 50% 50% 40% 60% / 60% 40% 60% 40%; display: flex; align-items: center; justify-content: center; font-size: 5rem;">
+                    🏰
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="container" style="margin-bottom: 6rem;">
+        <h2 class="section-title">Why Parents Choose Us</h2>
+        <div class="grid grid-3">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3>Safe & Secure</h3>
+                <p>24/7 CCTV surveillance and verified staff to ensure your child's safety.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: var(--pastel-purple); color: var(--secondary-color);"><i
+                        class="fas fa-chalkboard-teacher"></i></div>
+                <h3>Expert Teachers</h3>
+                <p>Qualified, caring, and experienced educators dedicated to child development.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: var(--pastel-green); color: #16a34a;"><i
+                        class="fas fa-shapes"></i></div>
+                <h3>Play-Based Learning</h3>
+                <p>Curriculum designed to make learning fun through activities and games.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: var(--pastel-pink); color: var(--accent-color);"><i
+                        class="fas fa-heart"></i></div>
+                <h3>Loving Care</h3>
+                <p>A home away from home where every child receives personal attention.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: var(--pastel-blue); color: var(--primary-color);"><i
+                        class="fas fa-bus"></i></div>
+                <h3>Transport Facility</h3>
+                <p>Safe and comfortable transport service with GPS tracking.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: var(--pastel-orange); color: #ea580c;"><i
+                        class="fas fa-apple-alt"></i></div>
+                <h3>Healthy Meals</h3>
+                <p>Nutritious and delicious snacks provided to keep energy levels high.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Programs -->
+    <section id="programs" style="background: #f8fafc; padding: 4rem 0;">
+        <div class="container">
+            <h2 class="section-title">Our Learning Programs</h2>
+            <div class="grid grid-3">
+                <div class="program-card">
+                    <div class="program-header" style="background: var(--warning-color);">
+                        <h3>Nursery</h3>
+                        <p>Age: 2 - 3 Years</p>
+                    </div>
+                    <div class="program-body">
+                        <p>Focus on sensory activities, basic language skills, and social interaction.</p>
+                        <ul
+                            style="text-align: left; padding-left: 1.5rem; margin-top: 1rem; color: var(--text-secondary);">
+                            <li>Sensory Play</li>
+                            <li>Storytelling</li>
+                            <li>Music & Movement</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="program-card">
+                    <div class="program-header" style="background: var(--success-color);">
+                        <h3>Junior KG</h3>
+                        <p>Age: 3 - 4 Years</p>
+                    </div>
+                    <div class="program-body">
+                        <p>Introduction to alphabets, numbers, and structured learning activities.</p>
+                        <ul
+                            style="text-align: left; padding-left: 1.5rem; margin-top: 1rem; color: var(--text-secondary);">
+                            <li>Phonics</li>
+                            <li>Basic Math</li>
+                            <li>Art & Craft</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="program-card">
+                    <div class="program-header" style="background: var(--accent-color);">
+                        <h3>Senior KG</h3>
+                        <p>Age: 4 - 6 Years</p>
+                    </div>
+                    <div class="program-body">
+                        <p>Preparing children for primary school with advanced concepts and confidence.</p>
+                        <ul
+                            style="text-align: left; padding-left: 1.5rem; margin-top: 1rem; color: var(--text-secondary);">
+                            <li>Reading & Writing</li>
+                            <li>Science Experiments</li>
+                            <li>Public Speaking</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Highlights -->
+    <section class="container" style="padding: 6rem 0;">
+        <div class="grid grid-4 text-center">
+            <div class="text-center">
+                <div style="font-size: 3rem; font-weight: 700; color: var(--primary-color);">10+</div>
+                <p style="color: var(--text-secondary);">Years of Excellence</p>
+            </div>
+            <div class="text-center">
+                <div style="font-size: 3rem; font-weight: 700; color: var(--accent-color);">500+</div>
+                <p style="color: var(--text-secondary);">Happy Students</p>
+            </div>
+            <div class="text-center">
+                <div style="font-size: 3rem; font-weight: 700; color: var(--warning-color);">25+</div>
+                <p style="color: var(--text-secondary);">Qualified Teachers</p>
+            </div>
+            <div class="text-center">
+                <div style="font-size: 3rem; font-weight: 700; color: #16a34a;">100%</div>
+                <p style="color: var(--text-secondary);">Parent Satisfaction</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Events -->
+    <section class="container" style="margin-bottom: 6rem;">
+        <h2 class="section-title">Upcoming Events</h2>
+        <div class="grid grid-2">
+            <div class="facility-item" style="border-left: 5px solid var(--primary-color);">
+                <div
+                    style="background: var(--pastel-blue); padding: 1rem; border-radius: 8px; text-align: center; min-width: 80px;">
+                    <div style="font-weight: 700; color: var(--primary-color);">DEC</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;">25</div>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.25rem;">Christmas Celebration</h3>
+                    <p style="margin: 0.5rem 0 0; color: var(--text-secondary);">Join us for a day of joy, carols, and
+                        Santa's visit!</p>
+                </div>
+            </div>
+            <div class="facility-item" style="border-left: 5px solid var(--accent-color);">
+                <div
+                    style="background: var(--pastel-pink); padding: 1rem; border-radius: 8px; text-align: center; min-width: 80px;">
+                    <div style="font-weight: 700; color: var(--accent-color);">JAN</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;">26</div>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.25rem;">Republic Day Parade</h3>
+                    <p style="margin: 0.5rem 0 0; color: var(--text-secondary);">Flag hoisting and cultural performances
+                        by our little stars.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="container">
+        <h2 class="section-title">Happy Parents Say</h2>
+        <div class="grid grid-3">
+            <div class="testimonial-card">
+                <div class="testimonial-avatar">👩</div>
+                <div class="stars">★★★★★</div>
+                <p>"Little Star has been amazing for my daughter. She loves going to school every day!"</p>
+                <h4 style="margin-top: 1rem; color: var(--primary-color);">Priya Sharma</h4>
+                <small>Mother of Ananya (Nursery)</small>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-avatar">👨</div>
+                <div class="stars">★★★★★</div>
+                <p>"The teachers are so caring and patient. I've seen a huge improvement in my son's confidence."</p>
+                <h4 style="margin-top: 1rem; color: var(--primary-color);">Rahul Verma</h4>
+                <small>Father of Aarav (Jr KG)</small>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-avatar">👵</div>
+                <div class="stars">★★★★★</div>
+                <p>"Safe environment and excellent hygiene. Highly recommended for any parent!"</p>
+                <h4 style="margin-top: 1rem; color: var(--primary-color);">Anita Desai</h4>
+                <small>Grandmother of Vivaan (Sr KG)</small>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="container">
+            <div class="grid grid-4">
+                <div style="grid-column: span 2;">
+                    <h2 style="color: white; margin-bottom: 1rem;">Little Star Preschool</h2>
+                    <p style="color: rgba(255,255,255,0.8); max-width: 400px; margin-bottom: 2rem;">
+                        Nurturing young minds with love, care, and the best education practices.
+                        Your child's future starts here.
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="#" style="color: white; font-size: 1.5rem;"><i class="fab fa-facebook"></i></a>
+                        <a href="#" style="color: white; font-size: 1.5rem;"><i class="fab fa-instagram"></i></a>
+                        <a href="#" style="color: white; font-size: 1.5rem;"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: white; font-size: 1.25rem; margin-bottom: 1.5rem;">Quick Links</h3>
+                    <a href="#about" class="footer-link">About Us</a>
+                    <a href="#programs" class="footer-link">Programs</a>
+                    <a href="#events" class="footer-link">Events</a>
+                    <a href="login.html" class="footer-link">Parent Login</a>
+                </div>
+                <div>
+                    <h3 style="color: white; font-size: 1.25rem; margin-bottom: 1.5rem;">Contact Us</h3>
+                    <p class="footer-link"><i class="fas fa-map-marker-alt" style="margin-right: 0.5rem;"></i> 123
+                        Sunshine Street, Happy City</p>
+                    <p class="footer-link"><i class="fas fa-phone" style="margin-right: 0.5rem;"></i> +91 98765 43210
+                    </p>
+                    <p class="footer-link"><i class="fas fa-envelope" style="margin-right: 0.5rem;"></i>
+                        hello@littlestar.com</p>
+                    <p class="footer-link"><i class="fas fa-clock" style="margin-right: 0.5rem;"></i> Mon - Fri: 8:00 AM
+                        - 4:00 PM</p>
+                </div>
+            </div>
+            <div
+                style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 3rem; padding-top: 2rem; text-align: center; color: rgba(255,255,255,0.6); font-size: 0.9rem;">
+                &copy; 2025 Little Star Preschool. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

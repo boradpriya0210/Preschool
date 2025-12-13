@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fees - Student Dashboard</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍎</text></svg>">
+    <link rel="stylesheet" href="../main.css">
+</head>
+
+<body class="bg-light">
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">&larr; Back</a>
+                <h2 style="margin: 0; color: var(--text-primary);">My Fees</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <!-- <span id="studentName">Student</span> -->
+                    <a href="profile.html">
+                        <img id="studentPhotoHeader" src="../images/default-profile.png"
+                            onerror="this.src='https://ui-avatars.com/api/?name=Student&background=random'"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div id="errorContainer"></div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title text-primary">Fee Status</h3>
+            </div>
+            <div class="grid grid-3" id="feeStatusContainer" style="gap: 1.5rem;">
+                <div class="text-center p-4">Loading fee information...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title text-primary">Payment History</h3>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Payment Date</th>
+                            <th>Amount</th>
+                            <th>Remarks</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentTableBody">
+                        <tr>
+                            <td colspan="4" class="text-center p-4 text-muted">Loading payments...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadFeeData();
+        });
+
+        function loadFeeData() {
+            fetch(`${API_BASE_URL}/api/student/getFees`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) {
+                            window.location.href = '../login.html';
+                        }
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+
+                    // Update student info
+                    if (data.student) {
+                        // document.getElementById('studentName').textContent = data.student.name || 'Student';
+                        if (data.student.photo) {
+                            const photoEl = document.getElementById('studentPhotoHeader');
+                            if (photoEl) {
+                                if (data.student.photo.startsWith('http')) {
+                                    photoEl.src = data.student.photo;
+                                } else {
+                                    photoEl.src = API_BASE_URL + data.student.photo;
+                                }
+                            }
+                        }
+                    }
+
+                    // Render fee status cards
+                    const feeStatusContainer = document.getElementById('feeStatusContainer');
+                    feeStatusContainer.innerHTML = `
+                    <div class="card p-4 text-center" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                        <h4 style="color: var(--text-secondary); margin-bottom: 0.5rem; font-size: 1rem;">Yearly Fee</h4>
+                        <p style="color: var(--text-primary); font-size: 1.5rem; font-weight: 700; margin: 0;">₹${(data.yearlyFee || 0).toFixed(2)}</p>
+                    </div>
+                    <div class="card p-4 text-center" style="background: #ecfdf5; border: 1px solid #d1fae5;">
+                        <h4 style="color: #059669; margin-bottom: 0.5rem; font-size: 1rem;">Total Paid</h4>
+                        <p style="color: #059669; font-size: 1.5rem; font-weight: 700; margin: 0;">₹${(data.totalPaid || 0).toFixed(2)}</p>
+                    </div>
+                    <div class="card p-4 text-center" style="background: #fef2f2; border: 1px solid #fee2e2;">
+                        <h4 style="color: #dc2626; margin-bottom: 0.5rem; font-size: 1rem;">Pending Amount</h4>
+                        <p style="color: #dc2626; font-size: 1.5rem; font-weight: 700; margin: 0;">₹${(data.pendingFee || 0).toFixed(2)}</p>
+                    </div>
+                `;
+
+                    // Render payment history
+                    const tbody = document.getElementById('paymentTableBody');
+                    if (data.feePayments && data.feePayments.length > 0) {
+                        tbody.innerHTML = data.feePayments.map(payment => `
+                        <tr>
+                            <td>${payment.paymentDate || 'N/A'}</td>
+                            <td>₹${(payment.amount || 0).toFixed(2)}</td>
+                            <td>${payment.remarks || 'N/A'}</td>
+                            <td style="color: ${payment.status === 'Paid' ? '#10b981' : '#ef4444'}; font-weight: 600;">
+                                ${payment.status || 'Pending'}
+                            </td>
+                        </tr>
+                    `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-muted">No fee payments found.</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading fees:', error);
+                    showError('Failed to load fee information. Please try again.');
+                });
+        }
+
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+        }
+    </script>
+</body>
+
+</html>

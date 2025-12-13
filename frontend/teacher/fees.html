@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Fees Management | Little star</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../teacher-layout.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Include necessary styles from original fees.html if they are not in teacher-layout.css */
+        /* I'll assume teacher-layout.css covers most, but add specific fee styles here */
+        .fee-setup-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .fee-setup-item {
+            flex: 1;
+            min-width: 200px;
+            background: var(--card-glass);
+            /* Dark Glass */
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+
+        .fee-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .fee-input-group input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+            /* Dark Input */
+            color: var(--text-main);
+        }
+
+        .amount {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+
+        .text-success {
+            color: var(--success);
+        }
+
+        .text-danger {
+            color: var(--danger);
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-class {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 46, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: #1A1A2E;
+            color: var(--text-main);
+            border-radius: 16px;
+            width: 400px;
+            padding: 24px;
+            /* Matches dark theme */
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .close-modal {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .close-modal:hover {
+            color: var(--text-main);
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 10px;
+            background: var(--primary);
+            color: var(--dark-bg);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 24px;
+        }
+
+        .btn-save:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .page-link {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 14px;
+            background: transparent;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .page-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .page-link.active {
+            background: var(--primary);
+            color: var(--dark-bg);
+            border-color: var(--primary);
+        }
+    </style>
+    <style>
+        :root {
+            --primary: #FF8E8E;
+            --secondary: #4ECDC4;
+            --accent: #FFE66D;
+            --dark-bg: #1A1A2E;
+            --card-glass: rgba(255, 255, 255, 0.05);
+            --text-main: #EAEAEA;
+            --text-muted: #B0B0B0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #16213E 0%, #1A1A2E 100%) !important;
+            color: var(--text-main) !important;
+            min-height: 100vh;
+            display: block !important;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* STAR FIELD STYLES */
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: twinkle var(--duration) ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.2;
+                transform: scale(0.8);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Floating Shapes */
+        .hero-shapes div {
+            position: fixed;
+            opacity: 0.3;
+            animation: float 10s infinite ease-in-out;
+            filter: blur(60px);
+            z-index: 1;
+        }
+
+        .shape-1 {
+            top: -10%;
+            left: -10%;
+            width: 300px;
+            height: 300px;
+            background: var(--secondary);
+            border-radius: 50%;
+        }
+
+        .shape-2 {
+            bottom: -10%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation-delay: 2s;
+        }
+
+        .shape-3 {
+            top: 40%;
+            left: 40%;
+            width: 200px;
+            height: 200px;
+            background: #9B59B6;
+            border-radius: 50%;
+            animation-delay: 1s;
+            opacity: 0.2;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-30px) scale(1.1);
+            }
+        }
+
+        /* Ensure content is above stars */
+        .dashboard-full,
+        .header,
+        .content-scroll {
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Enhance cards for dark theme */
+        .card {
+            background: var(--card-glass) !important;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        th,
+        td,
+        label {
+            color: white !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Star Field & Shapes -->
+    <div class="stars-container" id="starsContainer"></div>
+    <div class="hero-shapes">
+        <div class="shape-1"></div>
+        <div class="shape-2"></div>
+        <div class="shape-3"></div>
+    </div>
+
+    <!-- No Sidebar -->
+
+    <div class="dashboard-full">
+        <div class="header">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <a href="dashboard.html" style="text-decoration: none; font-size: 1.5rem; margin-right: 16px;">⬅️</a>
+                <h1>Fees Management</h1>
+            </div>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <span id="teacherName" style="font-weight: 600;">Teacher Name</span>
+                <a href="profile.html">
+                    <img id="teacherPhoto" src="../images/default-profile.png"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Teacher&background=random'"
+                        style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border);">
+                </a>
+            </div>
+        </div>
+
+        <div id="successMsg" class="alert alert-success" style="display: none;">
+            Operation completed successfully!
+        </div>
+
+        <!-- 1. Top Section: Fee Setup -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Fee Setup</h3>
+            </div>
+            <div class="card-body">
+                <div class="fee-setup-grid" id="feeSetupGrid">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Center Section: Student Fees Status -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Student Fees Status</h3>
+                <div class="filters">
+                    <select id="classFilter" class="form-control" style="width: 150px;">
+                        <option value="">All Classes</option>
+                    </select>
+                    <input type="text" id="searchInput" placeholder="Search Name/Roll No" class="form-control"
+                        style="width: 220px;">
+                    <button id="searchBtn" class="btn-search">Search</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Student Name</th>
+                            <th>Class</th>
+                            <th>Yearly Fee</th>
+                            <th>Paid</th>
+                            <th>Pending</th>
+                            <th>Last Payment</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentFeeTableBody">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="paginationContainer"></div>
+        </div>
+
+        <!-- 3. Bottom Section: Recent Transactions -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Transactions</h3>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Student Name</th>
+                            <th>Date</th>
+                            <th>Paid Amount</th>
+                            <th>Pending Amount</th>
+                            <th>Remark</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentPaymentsBody">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Update Fees</h3>
+                <span class="close-modal" onclick="closePaymentModal()">&times;</span>
+            </div>
+            <p style="margin-bottom: 24px; color: var(--text-secondary); font-size: 15px;">
+                Student: <strong id="modalStudentName" style="color: var(--text-main);"></strong>
+            </p>
+
+            <form id="addFeePaymentForm">
+                <input type="hidden" name="student" id="modalStudentId">
+
+                <div style="margin-bottom: 20px;">
+                    <label
+                        style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-secondary);">Pending
+                        Amount</label>
+                    <div style="background: #fef2f2; padding: 12px; border-radius: 8px; font-weight: 600; color: var(--danger); border: 1px solid #fee2e2;"
+                        id="modalPendingAmount">0.00</div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label
+                        style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-secondary);">Payment
+                        Amount</label>
+                    <input type="number" name="amount" step="0.01" required class="form-control"
+                        placeholder="Enter amount" style="width: 100%; box-sizing: border-box;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label
+                        style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-secondary);">Payment
+                        Date</label>
+                    <input type="date" name="paymentDate" id="paymentDateInput" required class="form-control"
+                        style="width: 100%; box-sizing: border-box;">
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <label
+                        style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-secondary);">Remarks
+                        (Optional)</label>
+                    <input type="text" name="remarks" class="form-control" placeholder="e.g. Cash, UPI, Late Fee"
+                        style="width: 100%; box-sizing: border-box;">
+                </div>
+
+                <input type="hidden" name="status" value="Paid">
+                <button type="submit" class="btn-save">Confirm Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+        let currentPage = 0;
+        let selectedClass = '';
+        let searchQuery = '';
+
+        async function init() {
+            loadFeesData(0);
+        }
+
+        async function loadFeesData(page) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            currentPage = page;
+            let url = `${API_BASE_URL}/api/teacher/getFees?page=${page}&size=10`;
+            if (selectedClass) url += `&className=${encodeURIComponent(selectedClass)}`;
+            if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderPage(data);
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        window.location.href = '../login.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function renderPage(data) {
+            // Teacher
+            if (data.teacher) {
+                document.getElementById('teacherName').innerText = data.teacher.name;
+                if (data.teacher.photo) {
+                    document.getElementById('teacherPhoto').src = API_BASE_URL + data.teacher.photo;
+                }
+            }
+
+            // Class Filter
+            const classFilter = document.getElementById('classFilter');
+            // Retain selected
+            const currentSelection = classFilter.value;
+            classFilter.innerHTML = '<option value="">All Classes</option>';
+            if (data.classNames) {
+                data.classNames.forEach(cls => {
+                    const option = document.createElement('option');
+                    option.value = cls;
+                    option.text = cls;
+                    if (cls === selectedClass) option.selected = true;
+                    classFilter.appendChild(option);
+                });
+            }
+
+            // Fee Setup Grid
+            const grid = document.getElementById('feeSetupGrid');
+            grid.innerHTML = '';
+            if (data.classNames) {
+                data.classNames.forEach(cls => {
+                    // Find fee
+                    const fee = data.classFeeMap ? data.classFeeMap[cls] : 0;
+
+                    const div = document.createElement('div');
+                    div.className = 'fee-setup-item';
+                    div.innerHTML = `
+                        <h4>${cls}</h4>
+                        <form onsubmit="saveClassFee(event, '${cls}')" class="fee-input-group">
+                            <input type="number" name="yearlyFee" value="${fee || 0}" step="0.01" required placeholder="Amount">
+                            <button type="submit" class="btn-update">Save</button>
+                        </form>
+                    `;
+                    grid.appendChild(div);
+                });
+            }
+
+            // Student Fee Table
+            const tbody = document.getElementById('studentFeeTableBody');
+            tbody.innerHTML = '';
+            if (data.studentFeeDTOs && data.studentFeeDTOs.length > 0) {
+                data.studentFeeDTOs.forEach(dto => {
+                    const tr = document.createElement('tr');
+                    const initial = dto.student.name.charAt(0);
+                    tr.innerHTML = `
+                        <td style="font-weight: 600;">${dto.student.rollNo || ''}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 32px; height: 32px; background: #e0e7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--primary);">
+                                    <span>${initial}</span>
+                                </div>
+                                <span style="font-weight: 500;">${dto.student.name}</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-class">${dto.student.className || '-'}</span></td>
+                        <td class="amount">${dto.yearlyFee || 0}</td>
+                        <td class="amount text-success">${dto.totalPaid || 0}</td>
+                        <td class="amount text-danger">${dto.pendingFee || 0}</td>
+                        <td style="color: var(--text-secondary);">${dto.lastPaymentDate || '-'}</td>
+                        <td>
+                            <button type="button" class="btn-action" 
+                                onclick="openPaymentModal('${dto.student.id}', '${dto.student.name}', ${dto.pendingFee})">
+                                Update Fees
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 48px; color: var(--text-secondary);">No students found matching your criteria.</td></tr>';
+            }
+
+            // Recent Payments
+            const recentBody = document.getElementById('recentPaymentsBody');
+            recentBody.innerHTML = '';
+            if (data.recentPayments && data.recentPayments.length > 0) {
+                data.recentPayments.forEach(pay => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                         <td style="font-weight: 600;">${pay.rollNo || ''}</td>
+                         <td style="font-weight: 500;">${pay.studentName || ''}</td>
+                         <td>${pay.paymentDate || ''}</td>
+                         <td class="amount text-success">${pay.paidAmount || 0}</td>
+                         <td class="amount text-danger">${pay.pendingAmount || 0}</td>
+                         <td>${pay.remarks || ''}</td>
+                    `;
+                    recentBody.appendChild(tr);
+                });
+            } else {
+                recentBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--text-secondary);">No recent transactions found.</td></tr>';
+            }
+
+            // Pagination
+            const pagination = document.getElementById('paginationContainer');
+            pagination.innerHTML = '';
+            const totalPages = data.totalPages || 0;
+            if (totalPages > 0) {
+                // Prev
+                if (data.currentPage > 0) {
+                    const prev = document.createElement('a');
+                    prev.className = 'page-link';
+                    prev.innerText = 'Previous';
+                    prev.onclick = () => loadFeesData(data.currentPage - 1);
+                    pagination.appendChild(prev);
+                }
+
+                // Numbers
+                for (let i = 0; i < totalPages; i++) {
+                    const a = document.createElement('a');
+                    a.className = `page-link ${data.currentPage === i ? 'active' : ''}`;
+                    a.innerText = i + 1;
+                    a.onclick = () => loadFeesData(i);
+                    pagination.appendChild(a);
+                }
+
+                // Next
+                if (data.currentPage < totalPages - 1) {
+                    const next = document.createElement('a');
+                    next.className = 'page-link';
+                    next.innerText = 'Next';
+                    next.onclick = () => loadFeesData(data.currentPage + 1);
+                    pagination.appendChild(next);
+                }
+            }
+        }
+
+        // Filter handlers
+        document.getElementById('classFilter').addEventListener('change', (e) => {
+            selectedClass = e.target.value;
+            loadFeesData(0);
+        });
+
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            searchQuery = document.getElementById('searchInput').value;
+            loadFeesData(0);
+        });
+
+        // Save Fee Class
+        window.saveClassFee = async function (event, className) {
+            event.preventDefault();
+            const token = localStorage.getItem('token');
+            const form = event.target;
+            const yearlyFee = form.querySelector('input[name="yearlyFee"]').value;
+            const formData = new URLSearchParams();
+            formData.append('className', className);
+            formData.append('yearlyFee', yearlyFee);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/saveClassFee`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                const res = await response.json();
+                if (res.status === 'success') {
+                    showSuccess();
+                    loadFeesData(currentPage);
+                } else {
+                    alert('Failed to save fee');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Add Fee Payment
+        document.getElementById('addFeePaymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const formData = new FormData(e.target);
+            const data = new URLSearchParams();
+            for (const pair of formData) {
+                data.append(pair[0], pair[1]);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/addFeePayment`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: data
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    showSuccess();
+                    closePaymentModal();
+                    loadFeesData(currentPage);
+                } else {
+                    alert('Failed to add payment');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Connection error');
+            }
+        });
+
+        function showSuccess() {
+            const msg = document.getElementById('successMsg');
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 3000);
+        }
+
+        function openPaymentModal(studentId, studentName, pendingAmount) {
+            document.getElementById('modalStudentId').value = studentId;
+            document.getElementById('modalStudentName').innerText = studentName;
+            document.getElementById('modalPendingAmount').innerText = pendingAmount;
+            document.getElementById('paymentDateInput').valueAsDate = new Date();
+            document.getElementById('paymentModal').style.display = 'flex';
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+
+        window.onclick = function (event) {
+            const modal = document.getElementById('paymentModal');
+            if (event.target == modal) {
+                closePaymentModal();
+            }
+        }
+
+        // Logout
+
+
+        init();
+    </script>
+    <script>
+        // Generate Star Field
+        const starsContainer = document.getElementById('starsContainer');
+        const starCount = 100;
+
+        if (starsContainer) {
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const size = Math.random() * 3 + 1;
+                const duration = Math.random() * 3 + 2;
+                const delay = Math.random() * 5;
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.setProperty('--duration', `${duration}s`);
+                star.style.setProperty('--delay', `${delay}s`);
+                starsContainer.appendChild(star);
+            }
+        }
+    </script>
+</body>
+
+</html>

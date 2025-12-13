@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Student - Teacher Dashboard</title>
+    <link rel="stylesheet" href="../main.css">
+</head>
+
+<body class="bg-light">
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">&larr; Back</a>
+                <h2 style="margin: 0; color: var(--text-primary);">Add Student Details</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span id="teacherName" style="font-weight: 600; color: var(--text-primary);">Teacher Name</span>
+                    <a href="profile.html">
+                        <img id="teacherPhoto" src="../images/default-profile.png"
+                            onerror="this.src='https://ui-avatars.com/api/?name=Teacher&background=random'"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Add Student Form Card -->
+        <div class="card mb-4">
+            <h3 class="mb-3" style="color: var(--primary-color);">Add New Student</h3>
+
+            <div id="successMsg" class="alert alert-success" style="display: none;">
+                Student added successfully!
+            </div>
+            <div id="errorMsg" class="alert alert-danger" style="display: none;">
+            </div>
+
+            <form id="addStudentForm">
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="name" required class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Roll No</label>
+                        <input type="text" name="rollNo" required class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="text" name="password" required class="form-control"
+                            placeholder="Set login password for student">
+                    </div>
+                    <div class="form-group">
+                        <label>Class Name</label>
+                        <select name="className" class="form-control">
+                            <option value="LKG">LKG</option>
+                            <option value="UKG">UKG</option>
+                            <option value="Nursery">Nursery</option>
+                            <option value="Play Group">Play Group</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mother's Name</label>
+                        <input type="text" name="motherName" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Mother's Phone Number</label>
+                        <input type="text" name="motherPhoneNumber" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Joining Date</label>
+                        <input type="date" name="joiningDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select name="gender" class="form-control">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea name="address" rows="3" class="form-control"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Add Student</button>
+            </form>
+        </div>
+
+        <!-- Student List Table -->
+        <div class="card">
+            <h3 class="mb-3" style="color: var(--primary-color);">Student List</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Name</th>
+                            <th>Class</th>
+                            <th>Mother's Name</th>
+                            <th>Joining Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        <!-- Students will be loaded here -->
+                        <tr>
+                            <td colspan="6" class="text-center">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+
+        async function init() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/addStudentPage`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+
+                    // Update Teacher Info
+                    const teacher = data.teacher;
+                    if (teacher) {
+                        const nameEl = document.getElementById('teacherName');
+                        if (nameEl) nameEl.innerText = teacher.name;
+
+                        const photoEl = document.getElementById('teacherPhoto');
+                        if (teacher.photo && photoEl) {
+                            if (teacher.photo.startsWith('http')) {
+                                photoEl.src = teacher.photo;
+                            } else {
+                                photoEl.src = API_BASE_URL + teacher.photo;
+                            }
+                        }
+                    }
+
+                    // Update Student List
+                    renderStudents(data.students);
+
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        window.location.href = '../login.html';
+                    } else {
+                        console.error('Failed to fetch data');
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function renderStudents(students) {
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = '';
+
+            if (!students || students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No students found</td></tr>';
+                return;
+            }
+
+            students.forEach(student => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${student.rollNo || ''}</td>
+                    <td>${student.name || ''}</td>
+                    <td>${student.className || ''}</td>
+                    <td>${student.motherName || ''}</td>
+                    <td>${student.joiningDate || ''}</td>
+                    <td>
+                        <a href="edit_student.html?id=${student.id}" class="btn btn-sm btn-secondary">Edit</a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Handle Add Student Form Submission
+        document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const token = localStorage.getItem('token');
+            const formData = new FormData(e.target);
+
+
+            const data = new URLSearchParams();
+            for (const pair of formData) {
+                data.append(pair[0], pair[1]);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/addStudent`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: data
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    const successMsg = document.getElementById('successMsg');
+                    const errorMsg = document.getElementById('errorMsg');
+                    successMsg.style.display = 'block';
+                    errorMsg.style.display = 'none';
+                    document.getElementById('addStudentForm').reset();
+                    // Refresh student list
+                    init();
+                    // Hide success message after 3 seconds
+                    setTimeout(() => {
+                        successMsg.style.display = 'none';
+                    }, 3000);
+                } else {
+                    const errorMsg = document.getElementById('errorMsg');
+                    errorMsg.innerText = result.message || 'Failed to add student';
+                    errorMsg.style.display = 'block';
+                    document.getElementById('successMsg').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error adding student:', error);
+                const errorMsg = document.getElementById('errorMsg');
+                errorMsg.innerText = 'Connection error';
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

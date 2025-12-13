@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - Teacher Dashboard</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍎</text></svg>">
+    <link rel="stylesheet" href="../main.css">
+    <style>
+        .status-cell {
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">&larr; Back</a>
+                <h2 style="margin: 0; color: var(--text-primary);">Mark Attendance</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span id="teacherName" style="font-weight: 600; color: var(--text-primary);">Teacher Name</span>
+                    <a href="profile.html">
+                        <img id="teacherPhoto" src="../images/default-profile.png"
+                            onerror="this.src='https://ui-avatars.com/api/?name=Teacher&background=random'"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Attendance Section -->
+        <div class="card">
+            <div class="card-header flex justify-between items-center flex-wrap gap-2">
+                <h3 class="card-title text-primary" style="margin: 0;">Attendance <span class="text-muted"
+                        style="font-size: 0.9em; font-weight: normal;">(<span id="displayDate">Date</span>)</span></h3>
+                <div class="flex items-center gap-2">
+                    <div class="form-group mb-0" style="margin-bottom: 0;">
+                        <select id="classSelect" class="form-control"
+                            style="padding: 0.4rem 2rem 0.4rem 0.8rem; min-width: 140px;">
+                            <option value="">Select Class</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-0" style="margin-bottom: 0;">
+                        <input type="date" id="dateData" class="form-control" style="padding: 0.4rem 0.8rem;">
+                    </div>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Student Name</th>
+                            <th>Class</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                        <!-- Students loaded here -->
+                        <tr>
+                            <td colspan="5" class="text-center">Loading students...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+
+        async function init() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            // Get date from URL or default to today
+            const urlParams = new URLSearchParams(window.location.search);
+            let date = urlParams.get('date');
+
+            // Set up listeners first
+            document.getElementById('dateData').addEventListener('change', (e) => {
+                loadData();
+            });
+
+            document.getElementById('classSelect').addEventListener('change', (e) => {
+                loadData();
+            });
+
+            // Initial load
+            loadData(date);
+        }
+
+        async function loadData(dateOverride) {
+            const token = localStorage.getItem('token');
+            const dateInput = document.getElementById('dateData');
+            const classSelect = document.getElementById('classSelect');
+
+            // Determine date: override -> input value -> today (handled by backend if empty, but we want to be explicit)
+            let date = dateOverride || dateInput.value;
+            // If dateInput is empty (first load), don't send anything usually, but backend sets default. 
+            // Better to let backend handle default date if we don't have one? 
+            // Or just pass what we have. 
+            // In init(), date might be null.
+
+            let className = classSelect.value;
+
+            let url = `${API_BASE_URL}/api/teacher/attendancePage?`;
+            if (date) {
+                url += `date=${date}&`;
+            }
+            if (className) {
+                url += `className=${encodeURIComponent(className)}`;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Teacher Info
+                    if (data.teacher) {
+                        document.getElementById('teacherName').innerText = data.teacher.name;
+                        if (data.teacher.photo) {
+                            const photoEl = document.getElementById('teacherPhoto');
+                            if (photoEl) {
+                                if (data.teacher.photo.startsWith('http')) {
+                                    photoEl.src = data.teacher.photo;
+                                } else {
+                                    photoEl.src = API_BASE_URL + data.teacher.photo;
+                                }
+                            }
+                        }
+                    }
+
+                    // Populate Class Dropdown (only if empty to avoid resetting selection)
+                    if (classSelect.options.length <= 1 && data.classNames) {
+                        data.classNames.forEach(cls => {
+                            const option = document.createElement('option');
+                            option.value = cls;
+                            option.innerText = cls;
+                            classSelect.appendChild(option);
+                        });
+
+                        // Reselect class if it was in response (e.g. if we refreshed page with params, or just to sync)
+                        // If we initiated the call with a className, ensure it's selected.
+                        if (data.selectedClass) {
+                            classSelect.value = data.selectedClass;
+                        }
+                    }
+
+                    // Date
+                    const selectedDate = data.selectedDate || new Date().toISOString().split('T')[0];
+                    document.getElementById('displayDate').innerText = selectedDate;
+                    document.getElementById('dateData').value = selectedDate;
+
+                    // Table
+                    renderTable(data.students, data.attendanceMap);
+
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        window.location.href = '../login.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function renderTable(students, attendanceMap) {
+            const tbody = document.getElementById('attendanceTableBody');
+            tbody.innerHTML = '';
+
+            if (!students || students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding: 2rem; color: var(--text-secondary);">No students found</td></tr>';
+                return;
+            }
+
+            students.forEach(student => {
+                const status = attendanceMap[student.id];
+                let statusText = '-';
+                let statusStyle = 'color: var(--text-secondary);';
+
+                if (status === 'Present') {
+                    statusText = 'Present';
+                    statusStyle = 'color: #10b981;'; // Success color
+                } else if (status === 'Absent') {
+                    statusText = 'Absent';
+                    statusStyle = 'color: #ef4444;'; // Danger color
+                }
+
+                // Tricky: Button logic. 
+                // We want buttons that look good. 
+                // Maybe simplified buttons or icons? 
+                // Using btn-sm or similar.
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${student.rollNo || ''}</td>
+                    <td style="font-weight: 500;">${student.name || ''}</td>
+                    <td><span class="badge" style="background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;">${student.className || ''}</span></td>
+                    <td id="status-${student.id}" class="status-cell" style="${statusStyle}">${statusText}</td>
+                    <td>
+                        <div class="flex gap-2">
+                             <button type="button" class="btn btn-sm" 
+                                onclick="markAttendance(${student.id}, true)"
+                                style="background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; padding: 0.25rem 0.75rem; font-size: 0.85rem;">Present</button>
+                             <button type="button" class="btn btn-sm"
+                                onclick="markAttendance(${student.id}, false)"
+                                style="background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 0.25rem 0.75rem; font-size: 0.85rem;">Absent</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function markAttendance(studentId, isPresent) {
+            const token = localStorage.getItem('token');
+            const date = document.getElementById('dateData').value;
+            const formData = new URLSearchParams();
+            formData.append('studentId', studentId);
+            formData.append('present', isPresent);
+            formData.append('date', date);
+
+            try {
+                // Note: /teacher/markAttendance in controller returns ResponseEntity<String> "Attendance marked" or "Student not found"
+                // It does NOT return JSON object in my code read, BUT I should verify if I changed it.
+                // I did NOT change markAttendance in the batch update. It logic was:
+                // return org.springframework.http.ResponseEntity.ok("Attendance marked");
+                // So response is text.
+
+                const response = await fetch(`${API_BASE_URL}/api/teacher/markAttendance`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Update UI
+                    const statusCell = document.getElementById(`status-${studentId}`);
+                    if (isPresent) {
+                        statusCell.innerText = 'Present';
+                        statusCell.style.color = '#10b981';
+                    } else {
+                        statusCell.innerText = 'Absent';
+                        statusCell.style.color = '#ef4444';
+                    }
+                } else {
+                    alert('Failed to mark attendance');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Connection error');
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

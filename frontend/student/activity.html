@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity - Student Dashboard</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <link rel="stylesheet" href="../main.css">
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">&larr; Back</a>
+                <h2 style="margin: 0; color: var(--text-primary);">My Activities</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="profile.html">
+                    <img id="studentPhotoHeader" src="../images/default-profile.png"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Student&background=random'"
+                        style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                </a>
+            </div>
+        </header>
+
+        <!-- Activities Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title text-primary">Activity Log</h3>
+            </div>
+            <div id="loading" class="text-center p-4 text-muted">Loading activities...</div>
+
+            <div class="table-container hidden" id="activityTable">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 150px;">Date</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityBody">
+                        <!-- Rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+
+        async function init() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/student/getActivity`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+
+                    const student = data.student;
+                    if (student) {
+                        if (student.photo) {
+                            // document.getElementById('studentPhotoHeader').src = API_BASE_URL + student.photo;
+                            const photoEl = document.getElementById('studentPhotoHeader');
+                            if (photoEl) {
+                                if (student.photo.startsWith('http')) {
+                                    photoEl.src = student.photo;
+                                } else {
+                                    photoEl.src = API_BASE_URL + student.photo;
+                                }
+                            }
+                        }
+                    }
+
+                    const activities = data.activities || [];
+                    const tbody = document.getElementById('activityBody');
+                    tbody.innerHTML = '';
+
+                    if (activities.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No activities found.</td></tr>';
+                    } else {
+                        activities.forEach(act => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                            <td style="font-weight: 500;">${act.date}</td>
+                            <td>${act.description}</td>
+                        `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('activityTable').classList.remove('hidden');
+
+                } else {
+                    console.error('Failed to fetch activities');
+                    document.getElementById('loading').innerText = 'Failed to load activities.';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').innerText = 'Connection error.';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

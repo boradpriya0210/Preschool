@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - Teacher Dashboard</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍎</text></svg>">
+    <link rel="stylesheet" href="../main.css">
+</head>
+
+<body class="bg-light">
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">&larr; Back</a>
+                <h2 style="margin: 0; color: var(--text-primary);">Announcements</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span id="teacherName" style="font-weight: 600; color: var(--text-primary);">Teacher Name</span>
+                    <a href="profile.html">
+                        <img id="teacherPhoto" src="../images/default-profile.png"
+                            onerror="this.src='https://ui-avatars.com/api/?name=Teacher&background=random'"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Post Announcement Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title text-primary">Make an Announcement</h3>
+            </div>
+
+            <div id="successMsg" class="alert alert-success" style="display: none;">
+                Announcement posted successfully!
+            </div>
+            <div id="errorMsg" class="alert alert-danger" style="display: none;"></div>
+
+            <form id="addAnnouncementForm">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" name="title" required class="form-control"
+                        placeholder="e.g., Parent Teacher Meeting">
+                </div>
+
+                <div class="form-group hidden">
+                    <!-- Assuming you might want descriptions later, keeping hidden or remove if strictly not needed, 
+                          but typically announcements need a body. 
+                          The previous code had description, sticking with it. -->
+                    <label>Description</label>
+                    <textarea name="description" rows="4" required class="form-control"
+                        placeholder="Details..."></textarea>
+                </div>
+
+                <!-- Re-check previous code: it HAD description. -->
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="4" required class="form-control"
+                        placeholder="Details..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Class</label>
+                    <select name="className" id="classSelect" required class="form-control">
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Post Announcement</button>
+            </form>
+        </div>
+
+        <!-- Past Announcements Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title text-primary">Past Announcements</h3>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Title</th>
+                            <th>Class</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="announcementTableBody">
+                        <!-- Loaded dynamically -->
+                        <tr>
+                            <td colspan="4" class="text-center">Loading announcements...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+
+        async function init() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/announcementPage`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Teacher
+                    if (data.teacher) {
+                        document.getElementById('teacherName').innerText = data.teacher.name;
+                        if (data.teacher.photo) {
+                            const photoEl = document.getElementById('teacherPhoto');
+                            if (photoEl) {
+                                if (data.teacher.photo.startsWith('http')) {
+                                    photoEl.src = data.teacher.photo;
+                                } else {
+                                    photoEl.src = API_BASE_URL + data.teacher.photo;
+                                }
+                            }
+                        }
+                    }
+
+                    // Class Names
+                    const classSelect = document.getElementById('classSelect');
+                    if (data.classNames) {
+                        // Clear existing except first
+                        while (classSelect.options.length > 1) {
+                            classSelect.remove(1);
+                        }
+
+                        data.classNames.forEach(cls => {
+                            const option = document.createElement('option');
+                            option.value = cls;
+                            option.text = cls;
+                            classSelect.appendChild(option);
+                        });
+                    }
+
+                    // Announcements
+                    const tbody = document.getElementById('announcementTableBody');
+                    tbody.innerHTML = '';
+                    if (data.announcements && data.announcements.length > 0) {
+                        data.announcements.forEach(ann => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${ann.date || ''}</td>
+                                <td style="font-weight: 500; color: var(--primary-color);">${ann.title || ''}</td>
+                                <td><span class="badge" style="background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;">${ann.className || ''}</span></td>
+                                <td>${ann.description || ''}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-secondary); padding: 2rem;">No announcements found</td></tr>';
+                    }
+
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        window.location.href = '../login.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Add Announcement
+        document.getElementById('addAnnouncementForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const formData = new FormData(e.target);
+            const data = new URLSearchParams();
+            for (const pair of formData) {
+                data.append(pair[0], pair[1]);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/addAnnouncement`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: data
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    document.getElementById('successMsg').style.display = 'block';
+                    document.getElementById('addAnnouncementForm').reset();
+                    init();
+                    setTimeout(() => document.getElementById('successMsg').style.display = 'none', 3000);
+                } else {
+                    alert('Failed to add announcement');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Connection error');
+            }
+        });
+
+        init();
+    </script>
+</body>
+
+</html>

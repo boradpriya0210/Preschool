@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Student - Teacher Dashboard</title>
+    <link rel="stylesheet" href="../main.css">
+</head>
+
+<body class="bg-light">
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <a href="add_student.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">&larr; Back</a>
+                <h2 style="margin: 0; color: var(--text-primary);">Edit Student Details</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span id="teacherName" style="font-weight: 600; color: var(--text-primary);">Teacher Name</span>
+                    <a href="profile.html">
+                        <img id="teacherPhoto" src="../images/default-profile.png"
+                            onerror="this.src='https://ui-avatars.com/api/?name=Teacher&background=random'"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Edit Student Form Card -->
+        <div class="card mb-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 style="color: var(--primary-color); margin: 0;">Edit Student</h3>
+            </div>
+
+            <div id="successMsg" class="alert alert-success" style="display: none;">
+                Student updated successfully!
+            </div>
+            <div id="errorMsg" class="alert alert-danger" style="display: none;">
+            </div>
+
+            <form id="editStudentForm">
+                <input type="hidden" name="id" id="studentId">
+                <div class="grid grid-2">
+                    <!-- Row 1 -->
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="name" id="studentName" required class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Roll No</label>
+                        <input type="text" name="rollNo" id="rollNo" required class="form-control">
+                    </div>
+
+                    <!-- Row 2 -->
+                    <div class="form-group">
+                        <label>Class Name</label>
+                        <select name="className" id="className" class="form-control">
+                            <option value="LKG">LKG</option>
+                            <option value="UKG">UKG</option>
+                            <option value="Nursery">Nursery</option>
+                            <option value="Play Group">Play Group</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="text" name="password" class="form-control"
+                            placeholder="Leave blank to keep current">
+                    </div>
+
+                    <!-- Row 3 -->
+                    <div class="form-group">
+                        <label>Mother's Name</label>
+                        <input type="text" name="motherName" id="motherName" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Mother's Phone Number</label>
+                        <input type="text" name="motherPhoneNumber" id="motherPhoneNumber" class="form-control">
+                    </div>
+
+                    <!-- Row 4 -->
+                    <div class="form-group">
+                        <label>Joining Date</label>
+                        <input type="date" name="joiningDate" id="joiningDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select name="gender" id="gender" class="form-control">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Full Width -->
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea name="address" id="address" rows="3" class="form-control"></textarea>
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary">Update Student</button>
+                    <a href="add_student.html" class="btn btn-secondary" style="text-decoration: none;">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+        const urlParams = new URLSearchParams(window.location.search);
+        const studentId = urlParams.get('id');
+
+        async function init() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+            if (!studentId) {
+                window.location.href = 'add_student.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/editStudentPage?id=${studentId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.error) {
+                        alert(data.error);
+                        window.location.href = 'add_student.html';
+                        return;
+                    }
+
+                    // Teacher
+                    if (data.teacher) {
+                        document.getElementById('teacherName').innerText = data.teacher.name;
+                        if (data.teacher.photo) {
+                            if (data.teacher.photo.startsWith('http')) {
+                                document.getElementById('teacherPhoto').src = data.teacher.photo;
+                            } else {
+                                document.getElementById('teacherPhoto').src = API_BASE_URL + data.teacher.photo;
+                            }
+                        }
+                    }
+
+                    // Student Data
+                    if (data.student) {
+                        const s = data.student;
+                        document.getElementById('studentId').value = s.id;
+                        document.getElementById('studentName').value = s.name || '';
+                        document.getElementById('rollNo').value = s.rollNo || '';
+                        document.getElementById('className').value = s.className || 'LKG';
+                        document.getElementById('motherName').value = s.motherName || '';
+                        document.getElementById('motherPhoneNumber').value = s.motherPhoneNumber || '';
+                        document.getElementById('joiningDate').value = s.joiningDate || '';
+                        document.getElementById('gender').value = s.gender || 'Male';
+                        document.getElementById('address').value = s.address || '';
+                    }
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        window.location.href = '../login.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Form Submit
+        document.getElementById('editStudentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const formData = new FormData(e.target);
+            const data = new URLSearchParams();
+            for (const pair of formData) {
+                data.append(pair[0], pair[1]);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/updateStudent`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: data
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    const successMsg = document.getElementById('successMsg');
+                    successMsg.style.display = 'block';
+                    document.getElementById('errorMsg').style.display = 'none';
+
+                    setTimeout(() => {
+                        window.location.href = 'add_student.html';
+                    }, 1500);
+                } else if (result.error) {
+                    const err = document.getElementById('errorMsg');
+                    err.style.display = 'block';
+                    err.innerText = result.error;
+                    document.getElementById('successMsg').style.display = 'none';
+                } else {
+                    alert('Failed to update student');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Connection error');
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

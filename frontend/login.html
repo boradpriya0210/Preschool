@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little star - Login</title>
+    <link rel="stylesheet" href="main.css">
+    <!-- Preserved scripts logic inside specific function blocks -->
+    <script>
+        (function () {
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+            if (token && role) {
+                // Determine redirect path
+                let redirectPath = 'dashboard.html';
+                if (role.includes('TEACHER')) {
+                    redirectPath = 'teacher/dashboard.html';
+                } else if (role.includes('STUDENT')) {
+                    redirectPath = 'student/dashboard.html';
+                }
+                // Redirect immediately
+                window.location.href = redirectPath;
+            }
+        })();
+    </script>
+</head>
+
+<body class="login-page">
+
+    <!-- Decorative Background Shapes -->
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Welcome Back!</h2>
+            <p>Please login to your account</p>
+        </div>
+
+        <div class="form-toggle">
+            <button id="loginBtn" class="active" onclick="showLogin()">Login</button>
+            <button id="signupBtn" onclick="showSignup()">Signup</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm">
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+
+                <div id="loginError" class="alert alert-danger mt-4" style="display: none;">
+                    Invalid username or password.
+                </div>
+                <div id="logoutMsg" class="alert alert-success mt-4" style="display: none;">
+                    You have been logged out.
+                </div>
+                <div id="signupSuccessMsg" class="alert alert-success mt-4" style="display: none;">
+                    Signup successful! Please login.
+                </div>
+            </form>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signupForm" style="display: none;">
+            <div id="signupError" class="alert alert-danger" style="display: none;">
+                <p id="signupErrorText"></p>
+            </div>
+            <form id="signupFormElement">
+                <div class="form-group">
+                    <label for="Name">Full Name</label>
+                    <input type="text" id="Name" name="name" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="Username">Username</label>
+                    <input type="text" id="Username" name="username" placeholder="johndoe123" required>
+                </div>
+                <div class="form-group">
+                    <label for="Password">Password</label>
+                    <input type="password" id="Password" name="password" placeholder="********" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required onchange="toggleRoleFields()">
+                        <option value="TEACHER">Teacher</option>
+                        <!-- <option value="STUDENT">Student</option> -->
+                    </select>
+                </div>
+
+                <div class="form-group" id="studentFields" style="display:none;">
+                    <label for="className">Class Name</label>
+                    <input type="text" id="className" name="className" placeholder="e.g. Class 1A"><br>
+                    <label for="rollNo">Roll No</label>
+                    <input type="text" id="rollNo" name="rollNo" placeholder="e.g. 101">
+                </div>
+                <div class="form-group" id="teacherFields">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" name="subject" placeholder="e.g. Mathematics"><br>
+                    <label for="teacherId">Teacher ID</label>
+                    <input type="text" id="teacherId" name="teacherId" placeholder="e.g. T-500">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Original Scripts Preserved Exactly -->
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+
+        // Log API URL for debugging
+        console.log('API Base URL:', API_BASE_URL);
+
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const roleSelect = document.getElementById('role');
+        const studentFields = document.getElementById('studentFields');
+        const teacherFields = document.getElementById('teacherFields');
+        const usernameGroup = document.getElementById('Username').closest('.form-group');
+        const usernameInput = document.getElementById('Username');
+        const rollNoInput = document.getElementById('rollNo');
+
+        // Check URL params for messages
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('logout')) {
+            document.getElementById('logoutMsg').style.display = 'block';
+        }
+        if (urlParams.has('success')) {
+            document.getElementById('signupSuccessMsg').style.display = 'block';
+        }
+
+        // Check if backend is running
+        window.addEventListener('load', function () {
+            fetch(`${API_BASE_URL}/`, {
+                method: 'GET',
+                credentials: 'include'
+            })
+                .then(response => {
+                    console.log('✅ Backend is running on port 9097');
+                })
+                .catch(error => {
+                    console.error('❌ Cannot reach backend on port 9097. Make sure to start it with: java -jar target/preschool-0.0.1-SNAPSHOT.jar');
+                    const loginError = document.getElementById('loginError');
+                    if (!loginError.innerText) {
+                        loginError.textContent = '⚠️ Backend server not running. Start it first with: java -jar target/preschool-0.0.1-SNAPSHOT.jar';
+                        loginError.style.display = 'block';
+                    }
+                });
+        });
+
+        function showLogin() {
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+            loginBtn.classList.add('active');
+            signupBtn.classList.remove('active');
+        }
+
+        function showSignup() {
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'block';
+            loginBtn.classList.remove('active');
+            signupBtn.classList.add('active');
+        }
+
+        function toggleRoleFields() {
+            if (roleSelect.value === 'STUDENT') {
+                studentFields.style.display = 'block';
+                teacherFields.style.display = 'none';
+                // Hide Username field for students, use Roll No instead
+                usernameGroup.style.display = 'none';
+                rollNoInput.setAttribute('required', 'required');
+                // Sync Roll No to Username
+                rollNoInput.addEventListener('input', syncRollNoToUsername);
+            } else {
+                studentFields.style.display = 'none';
+                teacherFields.style.display = 'block';
+                // Show Username field for teachers
+                usernameGroup.style.display = 'block';
+                rollNoInput.removeAttribute('required');
+                rollNoInput.removeEventListener('input', syncRollNoToUsername);
+                usernameInput.value = ''; // Clear value
+            }
+        }
+
+        function syncRollNoToUsername() {
+            usernameInput.value = rollNoInput.value;
+        }
+
+        // Initial call to set correct fields
+        toggleRoleFields();
+
+        // API Connection Logic - Login
+        document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!username || !password) {
+                document.getElementById('loginError').textContent = 'Please enter username and password';
+                document.getElementById('loginError').style.display = 'block';
+                return;
+            }
+
+            // Clear previous errors
+            document.getElementById('loginError').style.display = 'none';
+
+            console.log('Attempting login for user:', username);
+
+            try {
+                console.log('Sending login request to:', `${API_BASE_URL}/api/auth/login`);
+
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    }),
+                    credentials: 'include'
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (response.ok && data.status === 'success') {
+                    console.log('✅ Login successful:', data);
+
+                    // Store token
+                    if (data.token) {
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('role', data.role);
+                        localStorage.setItem('username', data.username);
+                    }
+
+                    // Redirect based on role
+                    if (data.role.includes('TEACHER')) {
+                        window.location.href = 'teacher/dashboard.html';
+                    } else if (data.role.includes('STUDENT')) {
+                        window.location.href = 'student/dashboard.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                } else {
+                    const errorMsg = data.message || 'Invalid username or password';
+                    console.error('❌ Login failed:', errorMsg);
+                    document.getElementById('loginError').textContent = errorMsg;
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                console.error('Error type:', error.name);
+                console.error('Error message:', error.message);
+
+                let errorText = '';
+                if (error.message === 'Failed to fetch') {
+                    errorText = '❌ Cannot connect to backend. Make sure to start the server with: java -jar target/preschool-0.0.1-SNAPSHOT.jar';
+                } else {
+                    errorText = 'Connection error: ' + error.message;
+                }
+
+                document.getElementById('loginError').textContent = errorText;
+                document.getElementById('loginError').style.display = 'block';
+            }
+        });
+
+        // API Connection Logic - Signup
+        document.getElementById('signupFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            // Normalize inputs
+            if (data.username) data.username = data.username.trim().toLowerCase();
+            if (data.password) data.password = data.password.trim();
+
+            console.log('Attempting signup for user:', data.username);
+
+            // Clear previous errors
+            document.getElementById('signupError').style.display = 'none';
+
+            try {
+                console.log('Sending signup request to:', `${API_BASE_URL}/api/auth/register`);
+
+                const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ...data,
+                        password: data.password.trim() // Trim password to avoid accidental spaces
+                    }),
+                    credentials: 'include'
+                });
+
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response data:', result);
+
+                if (response.ok && result.status === 'success') {
+                    console.log('✅ Signup successful:', result);
+                    showLogin();
+                    document.getElementById('signupSuccessMsg').style.display = 'block';
+                    document.getElementById('signupFormElement').reset();
+                    document.getElementById('signupError').style.display = 'none';
+                    // Clear login error messages
+                    document.getElementById('loginError').style.display = 'none';
+                } else {
+                    const errorMsg = result.message || "Signup failed. Please check your inputs.";
+                    console.warn('⚠️ Signup validation failed:', errorMsg);
+                    document.getElementById('signupError').style.display = 'block';
+                    document.getElementById('signupErrorText').innerText = errorMsg;
+                }
+            } catch (error) {
+                console.error('❌ Signup error:', error);
+
+                let errorText = '';
+                if (error.message === 'Failed to fetch') {
+                    errorText = '❌ Cannot connect to backend. Make sure to start the server with: java -jar target/preschool-0.0.1-SNAPSHOT.jar';
+                } else {
+                    errorText = 'Connection error: ' + error.message;
+                }
+
+                document.getElementById('signupError').style.display = 'block';
+                document.getElementById('signupErrorText').innerText = errorText;
+            }
+        });
+    </script>
+</body>
+
+</html>

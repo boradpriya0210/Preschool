@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Exam Result - Teacher Dashboard</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍎</text></svg>">
+    <link rel="stylesheet" href="../main.css">
+</head>
+
+<body class="bg-light">
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <a href="marks.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">&larr; Back</a>
+                <h2 style="margin: 0; color: var(--text-primary);">Edit Exam Result</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span id="teacherName" style="font-weight: 600; color: var(--text-primary);">Teacher Name</span>
+                    <a href="profile.html">
+                        <img id="teacherPhoto" src="../images/default-profile.png"
+                            onerror="this.src='https://ui-avatars.com/api/?name=Teacher&background=random'"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div id="successMsg" class="alert alert-success" style="display: none;">
+            Marks updated successfully!
+        </div>
+        <div id="errorMsg" class="alert alert-danger" style="display: none;"></div>
+
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
+            <div class="card-header">
+                <h3 class="card-title text-primary">Edit Marks for <span id="studentName"
+                        class="text-secondary">Student</span></h3>
+            </div>
+
+            <form id="editExamResultForm">
+                <input type="hidden" name="id" id="resultId">
+                <div class="form-group">
+                    <label class="form-label">Exam Name</label>
+                    <input type="text" name="examName" id="examName" required class="form-control"
+                        placeholder="Enter exam name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <input type="text" name="subject" id="subject" required class="form-control"
+                        placeholder="Enter subject">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Marks Obtained</label>
+                    <input type="number" name="marksObtained" id="marksObtained" required class="form-control"
+                        placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Total Marks</label>
+                    <input type="number" name="totalMarks" id="totalMarks" required class="form-control"
+                        placeholder="100">
+                </div>
+
+                <div class="flex justify-end gap-2 mt-4">
+                    <a href="marks.html" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Update Marks</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://' + window.location.hostname + ':9097';
+        const urlParams = new URLSearchParams(window.location.search);
+        const resultId = urlParams.get('id');
+
+        async function init() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
+            if (!resultId) {
+                window.location.href = 'marks.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/editExamResultPage?id=${resultId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.error) {
+                        alert(data.error);
+                        window.location.href = 'marks.html';
+                        return;
+                    }
+
+                    // Teacher
+                    if (data.teacher) {
+                        document.getElementById('teacherName').innerText = data.teacher.name;
+                        if (data.teacher.photo) {
+                            const photoEl = document.getElementById('teacherPhoto');
+                            if (photoEl) {
+                                if (data.teacher.photo.startsWith('http')) {
+                                    photoEl.src = data.teacher.photo;
+                                } else {
+                                    photoEl.src = API_BASE_URL + data.teacher.photo;
+                                }
+                            }
+                        }
+                    }
+
+                    // Result Data
+                    if (data.examResult) {
+                        const r = data.examResult;
+                        document.getElementById('resultId').value = r.id;
+                        document.getElementById('studentName').innerText = r.student ? r.student.name : 'Student';
+                        document.getElementById('examName').value = r.examName || '';
+                        document.getElementById('subject').value = r.subject || '';
+                        document.getElementById('marksObtained').value = r.marksObtained || '';
+                        document.getElementById('totalMarks').value = r.totalMarks || '';
+                    }
+
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        window.location.href = '../login.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Form Submit
+        document.getElementById('editExamResultForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const formData = new FormData(e.target);
+            const data = new URLSearchParams();
+            for (const pair of formData) {
+                data.append(pair[0], pair[1]);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher/updateExamResult`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: data
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    document.getElementById('successMsg').style.display = 'block';
+                    setTimeout(() => window.location.href = 'marks.html', 1500);
+                } else if (result.error) {
+                    const err = document.getElementById('errorMsg');
+                    err.style.display = 'block';
+                    err.innerText = result.error;
+                } else {
+                    alert('Failed to update result');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Connection error');
+            }
+        });
+
+        // Logout
+
+
+        init();
+    </script>
+</body>
+
+</html>
