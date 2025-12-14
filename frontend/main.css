@@ -352,7 +352,8 @@ tr:hover td {
     justify-content: center;
     background: radial-gradient(circle at 10% 20%, rgb(242, 246, 252) 0%, rgb(235, 238, 255) 90%);
     position: relative;
-    overflow: hidden;
+    /* Removed overflow: hidden so content can scroll if needed */
+    padding: 2rem 0;
 }
 
 /* Fun Background Shapes for Login */
@@ -561,6 +562,7 @@ tr:hover td {
     background: #dcfce7;
     color: #16a34a;
 }
+
 /* ----------------------------------------------------
    LANDING PAGE SPECIFIC STYLES
    ---------------------------------------------------- */
@@ -719,7 +721,7 @@ tr:hover td {
 }
 
 .footer-link {
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
     display: block;
     margin-bottom: 0.5rem;
     transition: var(--transition);

@@ -5,7 +5,7 @@ public class RegisterRequest {
     private String name;
 
     @jakarta.validation.constraints.NotBlank(message = "Username is required")
-    @jakarta.validation.constraints.Size(min = 3, message = "Username must be at least 3 characters")
+    @jakarta.validation.constraints.Size(min = 1, message = "Username must be at least 1 character")
     private String username;
 
     @jakarta.validation.constraints.NotBlank(message = "Password is required")

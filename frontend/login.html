@@ -91,7 +91,7 @@
                     <label for="role">Role</label>
                     <select id="role" name="role" required onchange="toggleRoleFields()">
                         <option value="TEACHER">Teacher</option>
-                        <!-- <option value="STUDENT">Student</option> -->
+                        <option value="STUDENT">Student</option>
                     </select>
                 </div>
 
@@ -179,6 +179,7 @@
                 teacherFields.style.display = 'none';
                 // Hide Username field for students, use Roll No instead
                 usernameGroup.style.display = 'none';
+                usernameInput.removeAttribute('required'); // Remove required from hidden field
                 rollNoInput.setAttribute('required', 'required');
                 // Sync Roll No to Username
                 rollNoInput.addEventListener('input', syncRollNoToUsername);
@@ -187,6 +188,7 @@
                 teacherFields.style.display = 'block';
                 // Show Username field for teachers
                 usernameGroup.style.display = 'block';
+                usernameInput.setAttribute('required', 'required'); // Add required back
                 rollNoInput.removeAttribute('required');
                 rollNoInput.removeEventListener('input', syncRollNoToUsername);
                 usernameInput.value = ''; // Clear value
@@ -305,8 +307,16 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        ...data,
-                        password: data.password.trim() // Trim password to avoid accidental spaces
+                        // Construct payload based on role
+                        name: data.name,
+                        username: data.role === 'STUDENT' ? data.rollNo : data.username, // Use rollNo as username for students
+                        password: data.password.trim(),
+                        role: data.role,
+                        // Optional fields based on role
+                        className: data.role === 'STUDENT' ? data.className : null,
+                        rollNo: data.role === 'STUDENT' ? data.rollNo : null,
+                        subject: data.role === 'TEACHER' ? data.subject : null,
+                        teacherId: data.role === 'TEACHER' ? data.teacherId : null
                     }),
                     credentials: 'include'
                 });

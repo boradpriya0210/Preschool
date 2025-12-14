@@ -1,46 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Fees Management | Little star</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fees Management | Little star</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../teacher-layout.css">
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../main.css">
     <style>
-        /* Include necessary styles from original fees.html if they are not in teacher-layout.css */
-        /* I'll assume teacher-layout.css covers most, but add specific fee styles here */
+        /* Page-specific overrides for Fees Layout */
         .fee-setup-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
         }
 
         .fee-setup-item {
-            flex: 1;
-            min-width: 200px;
-            background: var(--card-glass);
-            /* Dark Glass */
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .fee-setup-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .fee-setup-item h4 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            font-size: 1.1rem;
         }
 
         .fee-input-group {
             display: flex;
-            gap: 8px;
+            gap: 0.5rem;
         }
 
         .fee-input-group input {
             flex: 1;
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: rgba(0, 0, 0, 0.2);
-            /* Dark Input */
-            color: var(--text-main);
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .btn-update {
+            padding: 0.5rem 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-update:hover {
+            background: var(--secondary-color);
         }
 
         .amount {
@@ -49,11 +67,11 @@
         }
 
         .text-success {
-            color: var(--success);
+            color: #0d9488;
         }
 
         .text-danger {
-            color: var(--danger);
+            color: #ef4444;
         }
 
         .badge {
@@ -64,16 +82,20 @@
         }
 
         .badge-class {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-muted);
-            border: 1px solid var(--border);
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
         }
 
         .filters {
             display: flex;
-            gap: 12px;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            /* Added margin bottom for spacing on small screens if wrapped */
+            flex-wrap: wrap;
         }
 
+        /* Modal Styles matching light theme */
         .modal {
             display: none;
             position: fixed;
@@ -81,275 +103,160 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(26, 26, 46, 0.8);
+            background: rgba(0, 0, 0, 0.5);
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(2px);
         }
 
         .modal-content {
-            background: #1A1A2E;
-            color: var(--text-main);
-            border-radius: 16px;
-            width: 400px;
-            padding: 24px;
-            /* Matches dark theme */
-            border: 1px solid var(--border);
+            background: white;
+            color: var(--text-primary);
+            border-radius: var(--border-radius-md);
+            width: 450px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            position: relative;
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--primary-color);
         }
 
         .close-modal {
-            font-size: 24px;
+            font-size: 1.5rem;
             cursor: pointer;
-            color: var(--text-muted);
+            color: var(--text-secondary);
+            transition: color 0.2s;
         }
 
         .close-modal:hover {
-            color: var(--text-main);
-        }
-
-        .btn-save {
-            width: 100%;
-            padding: 10px;
-            background: var(--primary);
-            color: var(--dark-bg);
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 24px;
-        }
-
-        .btn-save:hover {
-            background: var(--secondary);
-            color: white;
+            color: var(--danger-color);
         }
 
         .pagination {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin-top: 24px;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
         }
 
         .page-link {
-            padding: 8px 14px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
             text-decoration: none;
-            color: var(--text-main);
-            font-size: 14px;
-            background: transparent;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            background: white;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
 
         .page-link:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: #f1f5f9;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
         }
 
         .page-link.active {
-            background: var(--primary);
-            color: var(--dark-bg);
-            border-color: var(--primary);
-        }
-    </style>
-    <style>
-        :root {
-            --primary: #FF8E8E;
-            --secondary: #4ECDC4;
-            --accent: #FFE66D;
-            --dark-bg: #1A1A2E;
-            --card-glass: rgba(255, 255, 255, 0.05);
-            --text-main: #EAEAEA;
-            --text-muted: #B0B0B0;
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
         }
 
-        body {
-            background: linear-gradient(135deg, #16213E 0%, #1A1A2E 100%) !important;
-            color: var(--text-main) !important;
-            min-height: 100vh;
-            display: block !important;
-            overflow-x: hidden;
-            overflow-y: auto;
-            position: relative;
+        .btn-action {
+            padding: 0.4rem 0.8rem;
+            background: var(--pastel-blue);
+            color: var(--primary-color);
+            border: 1px solid transparent;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
         }
 
-        /* STAR FIELD STYLES */
-        .stars-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
+        .btn-action:hover {
+            background: var(--primary-color);
+            color: white;
         }
 
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            opacity: 0.8;
-            animation: twinkle var(--duration) ease-in-out infinite;
-            animation-delay: var(--delay);
+        .btn-search {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
         }
 
-        @keyframes twinkle {
-
-            0%,
-            100% {
-                opacity: 0.2;
-                transform: scale(0.8);
-            }
-
-            50% {
-                opacity: 1;
-                transform: scale(1.2);
-            }
-        }
-
-        /* Floating Shapes */
-        .hero-shapes div {
-            position: fixed;
-            opacity: 0.3;
-            animation: float 10s infinite ease-in-out;
-            filter: blur(60px);
-            z-index: 1;
-        }
-
-        .shape-1 {
-            top: -10%;
-            left: -10%;
-            width: 300px;
-            height: 300px;
-            background: var(--secondary);
-            border-radius: 50%;
-        }
-
-        .shape-2 {
-            bottom: -10%;
-            right: -10%;
-            width: 400px;
-            height: 400px;
-            background: var(--primary);
-            border-radius: 50%;
-            animation-delay: 2s;
-        }
-
-        .shape-3 {
-            top: 40%;
-            left: 40%;
-            width: 200px;
-            height: 200px;
-            background: #9B59B6;
-            border-radius: 50%;
-            animation-delay: 1s;
-            opacity: 0.2;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0) scale(1);
-            }
-
-            50% {
-                transform: translateY(-30px) scale(1.1);
-            }
-        }
-
-        /* Ensure content is above stars */
-        .dashboard-full,
-        .header,
-        .content-scroll {
-            position: relative;
-            z-index: 5;
-        }
-
-        /* Enhance cards for dark theme */
-        .card {
-            background: var(--card-glass) !important;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white !important;
-        }
-
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
-        th,
-        td,
-        label {
-            color: white !important;
+        .btn-search:hover {
+            opacity: 0.9;
         }
     </style>
 </head>
 
-<body>
-    <!-- Star Field & Shapes -->
-    <div class="stars-container" id="starsContainer"></div>
-    <div class="hero-shapes">
-        <div class="shape-1"></div>
-        <div class="shape-2"></div>
-        <div class="shape-3"></div>
-    </div>
+<body class="bg-light">
 
-    <!-- No Sidebar -->
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
 
-    <div class="dashboard-full">
-        <div class="header">
-            <div style="display: flex; align-items: center; gap: 16px;">
-                <a href="dashboard.html" style="text-decoration: none; font-size: 1.5rem; margin-right: 16px;">⬅️</a>
-                <h1>Fees Management</h1>
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <a href="dashboard.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">&larr; Back</a>
+                <h2 style="margin: 0; color: var(--text-primary);">Fees Management</h2>
             </div>
-            <div style="display: flex; align-items: center; gap: 16px;">
-                <span id="teacherName" style="font-weight: 600;">Teacher Name</span>
-                <a href="profile.html">
-                    <img id="teacherPhoto" src="../images/default-profile.png"
-                        onerror="this.src='https://ui-avatars.com/api/?name=Teacher&background=random'"
-                        style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border);">
-                </a>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span id="teacherName" style="font-weight: 600; color: var(--text-primary);">Teacher Name</span>
+                    <a href="profile.html">
+                        <img id="teacherPhoto" src="../images/default-profile.png"
+                            onerror="this.src='https://ui-avatars.com/api/?name=Teacher&background=random'"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                    </a>
+                </div>
             </div>
-        </div>
+        </header>
 
         <div id="successMsg" class="alert alert-success" style="display: none;">
             Operation completed successfully!
         </div>
 
         <!-- 1. Top Section: Fee Setup -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Fee Setup</h3>
+        <div class="card mb-4">
+            <div class="card-header" style="margin-bottom: 1.5rem;">
+                <h3 class="card-title text-primary" style="margin: 0;">Fee Setup</h3>
             </div>
             <div class="card-body">
                 <div class="fee-setup-grid" id="feeSetupGrid">
                     <!-- Loaded dynamically -->
+                    <div style="color: var(--text-secondary);">Loading classes...</div>
                 </div>
             </div>
         </div>
 
         <!-- 2. Center Section: Student Fees Status -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Student Fees Status</h3>
+        <div class="card mb-4">
+            <div class="card-header flex justify-between items-center"
+                style="margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <h3 class="card-title text-primary" style="margin: 0;">Student Fees Status</h3>
                 <div class="filters">
-                    <select id="classFilter" class="form-control" style="width: 150px;">
+                    <select id="classFilter" class="form-control" style="width: 150px; padding: 0.5rem;">
                         <option value="">All Classes</option>
                     </select>
                     <input type="text" id="searchInput" placeholder="Search Name/Roll No" class="form-control"
-                        style="width: 220px;">
+                        style="width: 220px; padding: 0.5rem;">
                     <button id="searchBtn" class="btn-search">Search</button>
                 </div>
             </div>
@@ -370,6 +277,10 @@
                     </thead>
                     <tbody id="studentFeeTableBody">
                         <!-- Loaded dynamically -->
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                                Loading student data...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -380,8 +291,8 @@
 
         <!-- 3. Bottom Section: Recent Transactions -->
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Recent Transactions</h3>
+            <div class="card-header" style="margin-bottom: 1.5rem;">
+                <h3 class="card-title text-primary" style="margin: 0;">Recent Transactions</h3>
             </div>
             <div class="table-container">
                 <table>
@@ -397,6 +308,10 @@
                     </thead>
                     <tbody id="recentPaymentsBody">
                         <!-- Loaded dynamically -->
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                                Loading recent transactions...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -412,7 +327,7 @@
                 <span class="close-modal" onclick="closePaymentModal()">&times;</span>
             </div>
             <p style="margin-bottom: 24px; color: var(--text-secondary); font-size: 15px;">
-                Student: <strong id="modalStudentName" style="color: var(--text-main);"></strong>
+                Student: <strong id="modalStudentName" style="color: var(--primary-color);"></strong>
             </p>
 
             <form id="addFeePaymentForm">
@@ -422,7 +337,7 @@
                     <label
                         style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-secondary);">Pending
                         Amount</label>
-                    <div style="background: #fef2f2; padding: 12px; border-radius: 8px; font-weight: 600; color: var(--danger); border: 1px solid #fee2e2;"
+                    <div style="background: #fef2f2; padding: 12px; border-radius: 8px; font-weight: 600; color: var(--danger-color); border: 1px solid #fee2e2;"
                         id="modalPendingAmount">0.00</div>
                 </div>
 
@@ -451,7 +366,7 @@
                 </div>
 
                 <input type="hidden" name="status" value="Paid">
-                <button type="submit" class="btn-save">Confirm Payment</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Confirm Payment</button>
             </form>
         </div>
     </div>
@@ -501,7 +416,9 @@
             if (data.teacher) {
                 document.getElementById('teacherName').innerText = data.teacher.name;
                 if (data.teacher.photo) {
-                    document.getElementById('teacherPhoto').src = API_BASE_URL + data.teacher.photo;
+                    // Check if photo is already full URL
+                    const photoSrc = data.teacher.photo.startsWith('http') ? data.teacher.photo : API_BASE_URL + data.teacher.photo;
+                    document.getElementById('teacherPhoto').src = photoSrc;
                 }
             }
 
@@ -509,8 +426,13 @@
             const classFilter = document.getElementById('classFilter');
             // Retain selected
             const currentSelection = classFilter.value;
-            classFilter.innerHTML = '<option value="">All Classes</option>';
+            // Only rebuild if empty or we want to ensure fresh list. Ideally we preserve selection.
+            // Simplified: Just rebuild.
+
+            // Check if we want to rebuild every time or not. 
+            // If data.classNames is present, we should probably update it.
             if (data.classNames) {
+                classFilter.innerHTML = '<option value="">All Classes</option>';
                 data.classNames.forEach(cls => {
                     const option = document.createElement('option');
                     option.value = cls;
@@ -552,7 +474,7 @@
                         <td style="font-weight: 600;">${dto.student.rollNo || ''}</td>
                         <td>
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 32px; height: 32px; background: #e0e7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--primary);">
+                                <div style="width: 32px; height: 32px; background: #e0f2fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--primary-color);">
                                     <span>${initial}</span>
                                 </div>
                                 <span style="font-weight: 500;">${dto.student.name}</span>
@@ -573,7 +495,7 @@
                     tbody.appendChild(tr);
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 48px; color: var(--text-secondary);">No students found matching your criteria.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-secondary);">No students found matching your criteria.</td></tr>';
             }
 
             // Recent Payments
@@ -593,7 +515,7 @@
                     recentBody.appendChild(tr);
                 });
             } else {
-                recentBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--text-secondary);">No recent transactions found.</td></tr>';
+                recentBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">No recent transactions found.</td></tr>';
             }
 
             // Pagination
@@ -728,34 +650,7 @@
             }
         }
 
-        // Logout
-
-
         init();
-    </script>
-    <script>
-        // Generate Star Field
-        const starsContainer = document.getElementById('starsContainer');
-        const starCount = 100;
-
-        if (starsContainer) {
-            for (let i = 0; i < starCount; i++) {
-                const star = document.createElement('div');
-                star.classList.add('star');
-                const x = Math.random() * 100;
-                const y = Math.random() * 100;
-                const size = Math.random() * 3 + 1;
-                const duration = Math.random() * 3 + 2;
-                const delay = Math.random() * 5;
-                star.style.left = `${x}%`;
-                star.style.top = `${y}%`;
-                star.style.width = `${size}px`;
-                star.style.height = `${size}px`;
-                star.style.setProperty('--duration', `${duration}s`);
-                star.style.setProperty('--delay', `${delay}s`);
-                starsContainer.appendChild(star);
-            }
-        }
     </script>
 </body>
 
