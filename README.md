@@ -24,5 +24,3 @@ This system manages preschool operations including student records, admissions, 
 - Database support (MySQL)
 
 
-## 🚀 How to Run
-```bash
